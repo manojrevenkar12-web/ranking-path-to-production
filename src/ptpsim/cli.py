@@ -122,8 +122,12 @@ def heldout(name: str, only: str | None, jobs: int = 1) -> int:
         print(sc.name, json.dumps(ev["summary"]), flush=True)
     if only:
         return 0
+    import subprocess as sp
+
+    commit = sp.run(["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True).stdout.strip() or None
     total: dict[str, object] = {
         "set": name,
+        "code_commit": commit,
         "status_at_run": status,
         "seasons": results,
         "releases": sum(int(r["releases"]) for r in results.values()),
