@@ -177,6 +177,8 @@ jobs:
           sed -i "s/172.18.0.1/$GW/g" deploy/k8s/overlays/ci/*.yaml
       - name: GitHub and JWKS stand-in on the runner
         run: nohup ptpsim serve github-stand-in --port 9999 > stand-in.log 2>&1 &
+      - name: Every overlay renders
+        run: for o in deploy/k8s/overlays/*/; do kubectl kustomize "$o" > /dev/null; echo "renders: $o"; done
       - name: Deploy the relay
         run: |
           kubectl apply -k deploy/k8s/overlays/ci

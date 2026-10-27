@@ -4,17 +4,34 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: buyer-mlops
 resources:
-  - ../../base/namespace.yaml
-  - ../../base/serviceaccounts.yaml
-  - ../../base/config.yaml
-  - ../../base/relay.yaml
-  - ../../base/networkpolicy.yaml
+  - ../../base
   - secrets.yaml
 images:
   - name: ptp
     newName: ranking-path-to-production
     newTag: ci
 patches:
+  # the relay alone: the console and Triton have their own CI jobs
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata: {name: console}
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata: {name: console}
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata: {name: triton}
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata: {name: triton}
   - target: {kind: Deployment, name: relay}
     patch: |-
       - op: replace

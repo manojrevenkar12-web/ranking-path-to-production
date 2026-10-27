@@ -12,7 +12,4 @@ resources:
   - console.yaml
   - triton.yaml
   - networkpolicy.yaml
-images:
-  - name: ptp
-    newName: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production
-    newTag: latest
+# `image: ptp` is a placeholder: each overlay names the registry and tag for its environment
