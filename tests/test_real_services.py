@@ -66,7 +66,7 @@ def test_real_vespa_serves_the_package_and_scores_like_the_model_offline() -> No
     assert r.total == 30 and len(r.hits) == 10
     x = np.array([[h.features[f] for f in feats] for h in r.hits], dtype=np.float32)
     assert np.allclose(run_onnx(onx, x)[:, 0], [h.relevance for h in r.hits], atol=1e-4)
-    assert {h.features["brand_affinity"] for h in r.hits} <= {0.0, pytest.approx(0.8)}
+    assert all(min(abs(h.features["brand_affinity"]), abs(h.features["brand_affinity"] - 0.8)) < 1e-6 for h in r.hits)
     assert v.count(['emb_versions contains "t0001"']) == 15
     assert v.count(["sold = false", "listed_at < 1010"]) == 10
     nn = v.search(

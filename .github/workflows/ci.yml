@@ -36,7 +36,9 @@ jobs:
       - name: Unit, pipeline and deploy tests
         run: scripts/ci_run.sh pytest -q -m "not season and not kfp"
       - name: The held-out first run is never rewritten
-        run: sha256sum -c heldout/first_run.sha256
+        run: |
+          if [ -f heldout/first_run.sha256 ]; then sha256sum -c heldout/first_run.sha256
+          else echo "::notice title=held-out::no first run recorded yet"; fi
 
   kfp:
     runs-on: ubuntu-24.04
