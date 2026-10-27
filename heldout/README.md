@@ -10,4 +10,4 @@ If the platform is changed using what a set's failures show, that set becomes a 
 
 | Set | Status | First run |
 |---|---|---|
-| v1 | held-out | `reports/heldout/v1/first_run.json` |
+| v1 | held-out, first run recorded at `5ee1d0e` | 42 releases; 7 of 11 harmful stopped, 13 of 19 better promoted |

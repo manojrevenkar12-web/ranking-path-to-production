@@ -80,7 +80,28 @@ so they are not a fair test; the held-out set below is. Full results: `reports/d
   explicit mode. Real Vespa also found a bug the emulator had missed: its expression language has `fabs`, not
   `abs`. The emulator now refuses `abs` too.
 
-HELDOUT_SECTION
+### Held-out
+
+Five seasons (`heldout/v1/`) written by an agent that read only `heldout/WRITING_SCENARIOS.md`, run once at commit
+`5ee1d0e` and recorded in `reports/heldout/v1/first_run.json` (pinned by `heldout/first_run.sha256`; CI checks it).
+Nothing was changed after looking at them.
+
+| | Held-out v1 (5 seasons) |
+|---|---|
+| Releases | 42 |
+| Harmful or broken releases stopped | 7 of 11 |
+| Better releases promoted | 13 of 19 |
+| Broken releases reaching a production deploy | 0 |
+| Data blocks traced to a real incident | 20 of 21 |
+
+This is worse than the dev seasons, and the gap is the finding. Three of the four harmful releases that reached
+production were homepage towers: two raised purchases overall (+28%, +80%) but cut them in LT (-16%, -38%), and
+one lost 2.5% overall and 31% in FR. The fourth was a search refresh, flat overall, that lost 4.4% in PL. The
+towers' offline check is recall on what members searched for, which did not track what the homepage sold, and the
+homepage canary rarely collects enough decided sessions to judge one market alone. The next step is a better
+offline check for towers (per market, closer to purchases), measured on a new held-out set written blind, since
+this one has now been looked at.
+
 
 ![The path](docs/screenshots/path.png)
 ![A version stopped offline](docs/screenshots/model.png)

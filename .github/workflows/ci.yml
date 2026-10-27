@@ -244,12 +244,16 @@ jobs:
           PTP_DISPATCH_EXTRA: '{"env": "ci", "bundle_run": "${{ github.run_id }}"}'
         run: |
           nohup ptpsim serve pubsub --port 8085 --push-url http://127.0.0.1:8090/pubsub/push > pubsub.log 2>&1 &
-          nohup ptp serve relay > relay.log 2>&1 &
+          # the relay has its own database, as in the cluster: the season above already used message ids from 10000000
+          psql "$PTP_DATABASE_URL" -c "create database ptp_relay"
+          export RELAY_DB=postgresql://ptp:ptp@localhost:5432/ptp_relay
+          PTP_DATABASE_URL=$RELAY_DB nohup ptp serve relay > relay.log 2>&1 &
           for i in $(seq 1 30); do curl -sf localhost:8090/healthz && curl -sf localhost:8085/oauth2/v3/certs > /dev/null && break; sleep 1; done
           date -u +%Y-%m-%dT%H:%M:%SZ > dispatched_after
           PTP_PUBSUB_API=http://127.0.0.1:8085 ptp pipeline publish --run-id loop-ranker --kind ranker
-          for i in $(seq 1 30); do [ "$(psql "$PTP_DATABASE_URL" -tAc "select count(*) from relay_messages where action='dispatched'")" -ge 1 ] && break; sleep 2; done
-          psql "$PTP_DATABASE_URL" -tc "select message_id, action from relay_messages" | sed 's/^/::notice title=relay::/'
+          for i in $(seq 1 30); do [ "$(psql "$RELAY_DB" -tAc "select count(*) from relay_messages where action='dispatched'")" -ge 1 ] && break; sleep 2; done
+          psql "$RELAY_DB" -tc "select message_id, action from relay_messages" | sed 's/^/::notice title=relay::/'
+          [ "$(psql "$RELAY_DB" -tAc "select count(*) from relay_messages where action='dispatched'")" -ge 1 ] || { echo "::error title=relay::nothing dispatched"; tail -n 30 relay.log; exit 1; }
       - name: Wait for the deploy workflow it started
         env: {GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"}
         run: |
