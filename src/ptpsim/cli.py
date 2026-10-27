@@ -21,6 +21,11 @@ def main(argv: list[str] | None = None) -> int:
     h.add_argument("set")
     h.add_argument("--only", help="run one season of the set (no recording)")
     h.add_argument(
+        "--record",
+        action="store_true",
+        help="record the first run from the seasons' evaluations, once every season has run with --only",
+    )
+    h.add_argument(
         "--jobs",
         type=int,
         default=1,
@@ -41,7 +46,7 @@ def main(argv: list[str] | None = None) -> int:
             servers.run_github_stand_in(a.port, auth["audience"], auth["service_account"])
         return 0
     if a.cmd == "heldout":
-        return heldout(a.set, a.only, a.jobs)
+        return heldout(a.set, a.only, a.jobs, a.record)
     if a.cmd == "run":
         from ptp import evaluate
 
@@ -56,7 +61,7 @@ def main(argv: list[str] | None = None) -> int:
     return 2
 
 
-def heldout(name: str, only: str | None, jobs: int = 1) -> int:
+def heldout(name: str, only: str | None, jobs: int = 1, record: bool = False) -> int:
     """Runs every season of heldout/<set>, writes reports/heldout/<set>/<season>/evaluation.json and, once,
     first_run.json with the aggregate. A recorded first run is never rewritten."""
     import hashlib
@@ -77,7 +82,16 @@ def heldout(name: str, only: str | None, jobs: int = 1) -> int:
     if only:
         seasons = [s for s in seasons if s.stem == only]
     results = {}
-    if jobs > 1 and not only:
+    if record:
+        names = [Scenario.load(path).name for path in seasons]
+        missing = [n for n in names if not (reports / n / "evaluation.json").exists()]
+        if missing:
+            print(f"not every season has run: {', '.join(missing)}")
+            return 1
+        for n in names:
+            results[n] = json.loads((reports / n / "evaluation.json").read_text())["summary"]
+        seasons = []
+    elif jobs > 1 and not only:
         import os
         import subprocess
         import sys
