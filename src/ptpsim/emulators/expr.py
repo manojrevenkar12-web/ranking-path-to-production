@@ -3,7 +3,7 @@ documents of one query. It is part of the emulator, not of the platform: CI chec
 real Vespa.
 
 Supported: numbers, + - * /, unary minus, parentheses, attribute(f), query(f), calls to rank-profile functions,
-log, exp, abs, sqrt, sum(mapped * mapped), dense tensor literals tensor<float>(d0[1],d1[N]):[[e1, ..., eN]],
+log, exp, fabs (Vespa has no abs), sqrt, sum(mapped * mapped), dense tensor literals tensor<float>(d0[1],d1[N]):[[e1, ..., eN]],
 onnx(model).output and closeness(field, f).
 """
 
@@ -138,7 +138,7 @@ class Parser:
             field = self.take()[1]
             self.take(")")
             return Node("closeness", field)
-        if val in ("log", "exp", "abs", "sqrt", "sum"):
+        if val in ("log", "exp", "fabs", "sqrt", "sum"):
             self.take("(")
             arg = self.expr()
             self.take(")")
@@ -251,7 +251,7 @@ class Context:
                 return v.reshape(self.n, -1).sum(axis=1) if v.ndim > 1 else v
             v = _num(v, self.n)
             with np.errstate(divide="ignore", invalid="ignore"):
-                return {"log": np.log, "exp": np.exp, "abs": np.abs, "sqrt": np.sqrt}[node.value](v)
+                return {"log": np.log, "exp": np.exp, "fabs": np.abs, "sqrt": np.sqrt}[node.value](v)
         if k == "dense":
             cols = [_num(self.eval(c), self.n) for c in node.args]
             return np.stack(cols, axis=1).astype(np.float32)

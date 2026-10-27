@@ -53,9 +53,9 @@ def window(lake: Lake, as_of: int, window_days: int, holdout_days: int, table: s
 
 @dataclass
 class TrainingSet:
-    frame: pd.DataFrame           # one row per impression after deduplication; split column 'split'
+    frame: pd.DataFrame  # one row per impression after deduplication; split column 'split'
     features: list[str]
-    provenance: dict[str, str]    # feature -> logged | backfill:<snapshot>
+    provenance: dict[str, str]  # feature -> logged | backfill:<snapshot>
     snapshot: str
     raw_rows: int
     duplicates: int
@@ -73,7 +73,9 @@ def grade(frame: pd.DataFrame, labels: dict[str, int]) -> np.ndarray:
     return g
 
 
-def read_raw(lake: Lake, win: Window, surface: str = "search", quarantine: list[dict[str, Any]] | None = None) -> pd.DataFrame:
+def read_raw(
+    lake: Lake, win: Window, surface: str = "search", quarantine: list[dict[str, Any]] | None = None
+) -> pd.DataFrame:
     raw = lake.read("impressions", win.dates)
     if raw.empty:
         raise NoData("the window is empty")
@@ -109,7 +111,9 @@ def build(lake: Lake, win: Window, raw: pd.DataFrame, contract: Contract, traini
     return TrainingSet(frame, features, provenance, snapshot, len(raw), duplicates, extra)
 
 
-def _backfill(lake: Lake, frame: pd.DataFrame, expression: str, spec: dict[str, str]) -> tuple[pd.Series, pd.Series, list[Partition]]:
+def _backfill(
+    lake: Lake, frame: pd.DataFrame, expression: str, spec: dict[str, str]
+) -> tuple[pd.Series, pd.Series, list[Partition]]:
     if not (expression.startswith("attribute(") and expression.endswith(")")):
         raise ValueError(f"only single-attribute features can be backfilled from snapshots, not {expression!r}")
     attr = expression[len("attribute(") : -1]
@@ -122,7 +126,9 @@ def _backfill(lake: Lake, frame: pd.DataFrame, expression: str, spec: dict[str, 
     if snaps.empty:
         return pd.Series(np.nan, index=frame.index), pd.Series(np.nan, index=frame.index), []
     snaps["day"] = pd.to_datetime(snaps["as_of"] - 1, unit="s", utc=True).dt.date + dt.timedelta(days=offset)
-    joined = frame[["item_id", "day"]].merge(snaps[["item_id", "day", attr, "as_of"]], on=["item_id", "day"], how="left")
+    joined = frame[["item_id", "day"]].merge(
+        snaps[["item_id", "day", attr, "as_of"]], on=["item_id", "day"], how="left"
+    )
     joined.index = frame.index
     return joined[attr].astype(float), joined["as_of"].astype(float), [parts[d] for d in have]
 

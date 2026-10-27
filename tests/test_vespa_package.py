@@ -158,3 +158,10 @@ def test_feeding_a_field_the_schema_does_not_have_is_refused() -> None:
     v.put("it000001", _doc(1))
     with pytest.raises(Exception, match="No field"):
         v.update("it000001", {"emb_t0009": {"assign": {"values": [1.0]}}})
+
+
+def test_the_expression_language_is_vespas_not_pythons() -> None:
+    # real Vespa refused abs() as a malformed rank feature name in CI; its function is fabs()
+    assert E.parse("fabs(log(attribute(price)) - query(user_log_price))").kind == "fn"
+    with pytest.raises(Exception):  # noqa: B017
+        E.parse("abs(log(attribute(price)) - query(user_log_price))")

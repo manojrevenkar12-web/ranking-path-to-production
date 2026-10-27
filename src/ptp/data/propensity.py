@@ -26,7 +26,12 @@ def estimate(raw: pd.DataFrame, positions: int = 20, min_sessions: int = 300) ->
     y = np.log(ctr.to_numpy() / ctr.iloc[0])
     x = np.log(k)
     eta = float(max(0.0, -np.sum(w * x * y) / max(np.sum(w * x * x), 1e-9)))
-    return {"source": "explore", "sessions": sessions, "eta": round(eta, 4), "per_position": (k ** -eta).round(5).tolist()}
+    return {
+        "source": "explore",
+        "sessions": sessions,
+        "eta": round(eta, 4),
+        "per_position": (k**-eta).round(5).tolist(),
+    }
 
 
 def weights(positions: np.ndarray, propensity: dict[str, Any] | None, max_weight: float) -> np.ndarray:
