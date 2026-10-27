@@ -106,9 +106,8 @@ describe("a model version", () => {
     expect(row).toHaveAttribute("aria-expanded", "false");
     await userEvent.click(row);
     expect(row).toHaveAttribute("aria-expanded", "true");
-    expect(
-      await screen.findByText(new RegExp(`Gate ${blocking.gate.replace(".", "\\.")}`)),
-    ).toBeInTheDocument();
+    // the evidence names the gate in code
+    expect((await screen.findAllByText(blocking.gate, { selector: "code" })).length).toBeGreaterThan(0);
   });
 
   it("plots the offline comparison per market", async () => {

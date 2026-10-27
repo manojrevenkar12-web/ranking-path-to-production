@@ -1,0 +1,295 @@
+{
+  "scenario": "season-b",
+  "releases": [
+    {
+      "version": "r0002",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.5847,
+      "worst_market": "PL",
+      "worst_market_delta": 0.4374,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 9,
+      "note": ""
+    },
+    {
+      "version": "r0003",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0987,
+      "worst_market": "LT",
+      "worst_market_delta": 0.055,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 10,
+      "note": ""
+    },
+    {
+      "version": "r0004",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0372,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0074,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ]
+      },
+      "day": 12,
+      "note": ""
+    },
+    {
+      "version": "r0005",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0175,
+      "worst_market": "PL",
+      "worst_market_delta": 0.0064,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 13,
+      "note": ""
+    },
+    {
+      "version": "r0006",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": -0.0533,
+      "worst_market": "PL",
+      "worst_market_delta": -0.0997,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity"
+        ]
+      },
+      "day": 14,
+      "note": ""
+    },
+    {
+      "version": "r0007",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0081,
+      "worst_market": "FR",
+      "worst_market_delta": -0.0002,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 15,
+      "note": ""
+    },
+    {
+      "version": "r0008",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": 0.0018,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0054,
+      "platform": "not_deployed",
+      "failed_step": "deferred",
+      "change": {},
+      "day": 16,
+      "note": ""
+    },
+    {
+      "version": "r0009",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": 0.0041,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0141,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "position_debias": false
+      },
+      "day": 19,
+      "note": ""
+    },
+    {
+      "version": "r0010",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": -0.0051,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0283,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {},
+      "day": 20,
+      "note": ""
+    },
+    {
+      "version": "r0011",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": -0.0123,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0192,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 21,
+      "note": ""
+    },
+    {
+      "version": "r0012",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": 0.001,
+      "worst_market": "DE",
+      "worst_market_delta": -0.0071,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 22,
+      "note": ""
+    },
+    {
+      "version": "r0013",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": -0.0016,
+      "worst_market": "DE",
+      "worst_market_delta": -0.0055,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 23,
+      "note": ""
+    },
+    {
+      "version": "t0001",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": 0.5511,
+      "worst_market": "LT",
+      "worst_market_delta": -0.211,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {},
+      "day": 11,
+      "note": ""
+    },
+    {
+      "version": "t0002",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 1.1516,
+      "worst_market": "FR",
+      "worst_market_delta": 0.5051,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 16,
+      "note": ""
+    }
+  ],
+  "data_blocks": [
+    {
+      "run": "ct-ranker-d11",
+      "day": 11,
+      "gates": [
+        "data.null_rate"
+      ],
+      "causes": [
+        "null_feature"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d17",
+      "day": 17,
+      "gates": [
+        "data.label_rate"
+      ],
+      "causes": [
+        "click_drop"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d18",
+      "day": 18,
+      "gates": [
+        "data.freshness"
+      ],
+      "causes": [
+        "late_partition"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-tower-d21",
+      "day": 21,
+      "gates": [
+        "data.volume"
+      ],
+      "causes": [
+        "snapshot_missing_market"
+      ],
+      "justified": true
+    }
+  ],
+  "summary": {
+    "releases": 14,
+    "by_truth": {
+      "beneficial": 6,
+      "harmful": 3,
+      "neutral": 5
+    },
+    "harmful": 3,
+    "harmful_promoted": 1,
+    "harmful_stopped": {
+      "blocked_pipeline": 2
+    },
+    "beneficial": 6,
+    "beneficial_promoted": 6,
+    "beneficial_blocked": [],
+    "data_blocks": 4,
+    "data_blocks_unjustified": [],
+    "broken_reaching_prod_deploy": 0,
+    "harmful_exposure_share": 0.03698,
+    "minutes_candidate_to_canary_median": 0.0,
+    "hours_candidate_to_production_median": 18.0
+  },
+  "delivery": {
+    "push_attempts": 23,
+    "messages": 19,
+    "relay_records": {
+      "dispatched": 12,
+      "ignored": 7
+    },
+    "dispatches": 12
+  }
+}
