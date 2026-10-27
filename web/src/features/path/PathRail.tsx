@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from "framer-motion";
 
 import type { PathStation } from "../../shared/api/types";
 import { cx } from "../../shared/ui";
+import { listOfLabels } from "../../shared/lib/format";
 import { MOTION, STATION_STATE, STATIONS, gateLabel } from "../../shared/theme/tokens";
 import styles from "./PathRail.module.css";
 
@@ -48,13 +49,13 @@ export function PathRail({
             <li
               key={s.id}
               className={cx(styles.station, styles[st.state])}
-              title={`${s.label}: ${meta.label}${gates.length ? ` (${gates.join(", ")})` : ""}`}
+              title={`${s.label}: ${meta.label}${gates.length ? ` (${listOfLabels(gates)})` : ""}`}
             >
               <span className={styles.mark} aria-hidden />
               <span className={styles.label}>{s.label}</span>
               <span className="visually-hidden">{meta.label}</span>
               {size === "full" && st.state === "stopped" && gates.length > 0 && (
-                <span className={styles.reason}>{gates.join(", ")}</span>
+                <span className={styles.reason}>{listOfLabels(gates)}</span>
               )}
               {size === "full" && st.state === "waiting" && st.note && (
                 <span className={styles.reason}>{st.note}</span>

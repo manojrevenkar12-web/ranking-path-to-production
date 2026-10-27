@@ -139,7 +139,9 @@ function Body({ data }: { data: Overview }) {
                     </div>
                     <span className={styles.meta}>
                       {when(r.started_at)}
-                      {r.finished_at ? `, took ${duration(r.started_at, r.finished_at)}` : ""}
+                      {r.finished_at && r.finished_at > r.started_at
+                        ? `, took ${duration(r.started_at, r.finished_at)}`
+                        : ""}
                     </span>
                     {r.blocking.length > 0 && (
                       <span className={styles.blocking}>{r.blocking.map(gateLabel).join(", ")}</span>

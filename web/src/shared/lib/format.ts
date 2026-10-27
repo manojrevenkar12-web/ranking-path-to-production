@@ -17,6 +17,7 @@ export const share = (x: number) => `${Math.round(x * 100)}%`;
 
 export function duration(from: number, to: number) {
   const h = (to - from) / 3600;
+  if (h * 60 < 1) return "under a minute";
   return h < 1
     ? `${Math.round(h * 60)} min`
     : h < 48
@@ -27,3 +28,7 @@ export function duration(from: number, to: number) {
 /** "ranker_r0007" -> "r0007": the version a routing entry points at. */
 export const versionOf = (profile: string | null | undefined) =>
   profile ? profile.replace(/^ranker_/, "") : "";
+
+/** Gate labels as one phrase: "Not worse than production, not worse in any market". */
+export const listOfLabels = (labels: string[]) =>
+  labels.map((l, i) => (i === 0 ? l : l.charAt(0).toLowerCase() + l.slice(1))).join(", ");

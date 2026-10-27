@@ -24,7 +24,7 @@ def main(base: str) -> None:
         page.screenshot(path=str(OUT / "path.png"), full_page=False)
         target = sys.argv[2] if len(sys.argv) > 2 else "r0002"
         page.goto(f"{base}/models/{target}")
-        page.get_by_role("heading", name="Gates").wait_for()
+        page.get_by_role("heading", name="Gates", exact=True).wait_for()
         page.wait_for_timeout(1200)
         page.screenshot(path=str(OUT / "model.png"), full_page=False)
         page.goto(f"{base}/evidence")
