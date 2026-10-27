@@ -74,6 +74,9 @@ canary:
   rollback_confidence: 0.99        # roll back early when the candidate is clearly preferred less (upper bound < 0.5)
   max_hours: 48
   zero_result_rate_max: 0.02
+  surfaces:
+    # the homepage has about a third of search's sessions: a larger share and more time for the same evidence
+    home: {traffic_share: 0.5, max_hours: 72}
 
 gates:
   data.freshness: block

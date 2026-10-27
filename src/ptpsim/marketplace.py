@@ -473,7 +473,6 @@ class Marketplace:
         expired = w.expire(now)
         self.remove(expired)
         new = w.list_items(w.cfg.new_items_per_day, now)
-        # listings appear through the day; feed them up front with their listing time (listed_at) honoured by now
         self.feed(new)
 
     def flush_counters(self) -> None:

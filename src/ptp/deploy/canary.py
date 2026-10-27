@@ -23,13 +23,21 @@ def surface_of(kind: str) -> str:
     return "search" if kind == "ranker" else "home"
 
 
+def settings(surface: str) -> dict[str, Any]:
+    """Canary settings for a surface: the defaults with that surface's overrides (a quieter surface needs a larger
+    share or more time to collect the same number of decided sessions)."""
+    cfg = dict(config.load("gates")["canary"])
+    over = (cfg.pop("surfaces", None) or {}).get(surface) or {}
+    return {**cfg, **over}
+
+
 def arm_name(kind: str, version: str) -> str:
     return f"ranker_{version}" if kind == "ranker" else version
 
 
-def evaluate(sessions: Any, production: str, canary: str) -> dict[str, Any]:
+def evaluate(sessions: Any, production: str, canary: str, surface: str = "search") -> dict[str, Any]:
     """Interleaved sessions for this canary: breakage first, then the members' preference, overall and per market."""
-    cfg = config.load("gates")["canary"]
+    cfg = settings(surface)
     markets = config.load("gates")["segments"]["market"]
     s = sessions[(sessions["arm"] == "interleave") & (sessions["canary"] == canary)]
     out: dict[str, Any] = {"canary_sessions": len(s), "production": production}
@@ -43,32 +51,32 @@ def evaluate(sessions: Any, production: str, canary: str) -> dict[str, Any]:
         return out
     pref = IL.preference(s)
     out["overall"] = pref.to_dict(cfg["confidence"])
+    per: dict[str, Any] = {}
+    weak: list[str] = []
+    losing: list[tuple[str, Any]] = []
+    for m in markets:
+        pm = IL.preference(s[s["market"] == m])
+        per[m] = pm.to_dict(cfg["confidence"])
+        if pm.decided >= cfg["market_min_decided"]:
+            lo_m, _ = pm.interval(cfg["confidence"])
+            _, hi_m = pm.interval(cfg["rollback_confidence"])
+            if hi_m < 0.5:
+                losing.append((m, pm))
+            elif lo_m < cfg["market_non_inferiority_win_share"]:
+                weak.append(m)
+    out["markets"] = per
+    where = ", ".join(f"{m} {pm.win_share:.0%} of {pm.decided}" for m, pm in losing)
     _, hi_strict = pref.interval(cfg["rollback_confidence"])
     if pref.decided >= 30 and hi_strict < 0.5:
         out.update(
             decision="rollback",
-            reason=f"members preferred production: candidate won {pref.win_share:.0%} of {pref.decided} decided sessions",
+            reason=f"members preferred production: candidate won {pref.win_share:.0%} of {pref.decided} decided sessions"
+            + (f" (clearest in {where})" if losing else ""),
         )
         return out
-    per = {}
-    weak = []
-    for m in markets:
-        g = s[s["market"] == m]
-        pm = IL.preference(g)
-        per[m] = pm.to_dict(cfg["confidence"])
-        if pm.decided >= cfg["market_min_decided"]:
-            lo, _ = pm.interval(cfg["confidence"])
-            _, hi_m = pm.interval(cfg["rollback_confidence"])
-            if hi_m < 0.5:
-                out.update(
-                    markets=per,
-                    decision="rollback",
-                    reason=f"members in {m} preferred production ({pm.win_share:.0%} of {pm.decided})",
-                )
-                return out
-            if lo < cfg["market_non_inferiority_win_share"]:
-                weak.append(m)
-    out["markets"] = per
+    if losing:
+        out.update(decision="rollback", reason=f"members in {where.split(' ')[0]} preferred production ({where})")
+        return out
     lo, _ = pref.interval(cfg["confidence"])
     if pref.decided >= cfg["min_decided_sessions"] and lo >= cfg["non_inferiority_win_share"] and not weak:
         out.update(
@@ -105,13 +113,13 @@ def rollback_canary(reg: Registry, surface: str, version: str, reason: str) -> N
 
 def check(lake: Lake) -> list[dict[str, Any]]:
     reg = Registry()
-    cfg = config.load("gates")["canary"]
     now = clock.now()
     out = []
     for dep in reg.open_deployments("canary"):
         v = reg.version(dep["version"])
         assert v
         surface = surface_of(v["kind"])
+        cfg = settings(surface)
         route = reg.routing(surface)
         if not route or route.get("canary") != arm_name(v["kind"], v["version"]):
             continue
@@ -121,7 +129,7 @@ def check(lake: Lake) -> list[dict[str, Any]]:
         if len(sessions) == 0:
             res: dict[str, Any] = {"decision": "wait", "reason": "no sessions yet", "canary_sessions": 0}
         else:
-            res = evaluate(sessions, route["production"], route["canary"])
+            res = evaluate(sessions, route["production"], route["canary"], surface)
         hours = (now - since) / 3600
         if res["decision"] == "wait" and hours > cfg["max_hours"]:
             res.update(

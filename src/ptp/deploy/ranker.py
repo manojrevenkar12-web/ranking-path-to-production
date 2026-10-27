@@ -29,6 +29,7 @@ from ..registry.store import Registry
 from ..serving.vespa import package as P
 from ..serving.vespa.client import VespaError
 from . import envs
+from .canary import settings as canary_settings
 
 
 class DeployError(RuntimeError):
@@ -173,7 +174,7 @@ def run(version: str, trigger: str) -> dict[str, Any]:
         return _fail(reg, dep_id, version, "deploy_prod", str(e))
 
     route = reg.routing("search") or {"production": "popularity", "previous": None}
-    share = float(config.load("gates")["canary"]["traffic_share"])
+    share = float(canary_settings("search")["traffic_share"])
     reg.set_routing("search", route["production"], cand.name, share, f"canary {version} (deployment {dep_id})")
     reg.transition(version, "canary", "deploy", f"{share:.0%} of search traffic")
     reg.step(dep_id, "canary", True, f"{share:.0%} of search traffic on {cand.name}")

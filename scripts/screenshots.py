@@ -1,6 +1,6 @@
 """Screenshots of the console for the README (docs/screenshots), against `ptp serve` on :8000.
 
-    python scripts/screenshots.py http://127.0.0.1:8000
+python scripts/screenshots.py http://127.0.0.1:8000
 """
 
 from __future__ import annotations

@@ -1,6 +1,6 @@
 """Captures API answers from a season's registry into web/test/fixtures, for the console's unit tests.
 
-    PTP_DATABASE_URL=... python scripts/capture_fixtures.py
+PTP_DATABASE_URL=... python scripts/capture_fixtures.py
 """
 
 from __future__ import annotations

@@ -28,6 +28,7 @@ from ..serving.vespa import package as P
 from ..serving.vespa.client import VespaError, dense_tensor
 from ..training import tower_features as TF
 from . import envs
+from .canary import settings as canary_settings
 from .ranker import DeployError, current_spec, deploy_package, preflight
 
 
@@ -214,7 +215,7 @@ def embeddings_ready(version: str, trigger: str) -> dict[str, Any]:
         _load_triton(reg, "prod", v, keep)
     except TritonError as e:
         return _fail(reg, dep_id, version, "triton_prod", str(e))
-    share = float(config.load("gates")["canary"]["traffic_share"])
+    share = float(canary_settings("home")["traffic_share"])
     reg.set_routing("home", route["production"], version, share, f"canary {version} (deployment {dep_id})")
     reg.transition(version, "canary", "deploy", f"{share:.0%} of homepage traffic")
     reg.step(dep_id, "canary", True, f"{share:.0%} of homepage traffic on {version}")

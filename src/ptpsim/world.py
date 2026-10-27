@@ -148,7 +148,7 @@ class World:
         self.item_photo[idx] = np.clip(0.55 + 0.18 * quality + rng.normal(0, 0.15, count), 0, 1)
         self.item_seller[idx] = np.clip(4.3 + 0.25 * quality + rng.normal(0, 0.3, count), 1, 5)
         self.item_quality[idx] = quality
-        self.item_listed[idx] = now + rng.integers(0, 3600, count)  # listed during the first hour of the day
+        self.item_listed[idx] = now  # listed when they reach the index (the feed runs at the start of the day)
         return idx
 
     def live(self, now: int) -> np.ndarray:

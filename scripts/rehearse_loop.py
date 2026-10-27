@@ -18,7 +18,9 @@ from ptpsim.servers import serve
 
 def main(bundle: str, version: str) -> int:
     staging, prod = VespaEmulator(), VespaEmulator()
-    servers = [serve(staging.handle, p, "127.0.0.1") for p in (18080, 19071)] + [serve(prod.handle, p, "127.0.0.1") for p in (28080, 29071)]
+    servers = [serve(staging.handle, p, "127.0.0.1") for p in (18080, 19071)] + [
+        serve(prod.handle, p, "127.0.0.1") for p in (28080, 29071)
+    ]
     os.environ["PTP_NOW"] = str(json.loads((Path(bundle) / "meta.json").read_text())["now"])
     try:
         for argv in (

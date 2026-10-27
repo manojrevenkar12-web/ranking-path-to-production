@@ -26,7 +26,8 @@ def _path(version: str, transitions: list[dict[str, Any]], deployments: list[dic
         if d["state"] == "failed":
             steps = d["steps"] if isinstance(d["steps"], list) else json.loads(d["steps"])
             bad = [s for s in steps if not s["ok"]]
-            failed_step = bad[-1]["step"] if bad else "unknown"
+            deferred = any(s["step"] == "deferred" for s in steps)
+            failed_step = bad[-1]["step"] if bad else ("deferred" if deferred else "unknown")
     if "production" in statuses:
         outcome = "promoted"
     elif "rolled_back" in statuses:

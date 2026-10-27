@@ -269,7 +269,10 @@ class Season:
             self.adopt(day)
         for op in self.sc.operations:
             if op["day"] == day and op.get("hour", 1) == hour:
-                self.operate(op)
+                try:
+                    self.operate(op)
+                except Exception as e:  # an on-call command that fails (nothing to roll back to) is logged, not fatal
+                    self.log.append({"at": now, "operation": op, "error": f"{type(e).__name__}: {e}"})
         if hour == 3 and day in self.sc.ranker_days:
             self.pipeline("ranker", day, now)
         if hour == 4 and day in self.sc.tower_days:
