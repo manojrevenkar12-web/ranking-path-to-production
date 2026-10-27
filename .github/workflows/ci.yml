@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   python:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     services:
       postgres:
@@ -26,20 +26,20 @@ jobs:
     env:
       PTP_TEST_DATABASE_URL: postgresql://ptp:ptp@localhost:5432/ptp_test
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with: {python-version: "3.12", cache: pip}
       - run: pip install -e ".[dev]"
-      - run: ruff check src tests
-      - run: ruff format --check src tests
-      - run: mypy src
+      - run: scripts/ci_run.sh ruff check src tests scripts
+      - run: scripts/ci_run.sh ruff format --check src tests scripts
+      - run: scripts/ci_run.sh mypy src
       - name: Unit, pipeline and deploy tests
-        run: pytest -q -m "not season and not kfp"
+        run: scripts/ci_run.sh pytest -q -m "not season and not kfp"
       - name: The held-out first run is never rewritten
         run: sha256sum -c heldout/first_run.sha256
 
   kfp:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     services:
       postgres:
@@ -51,27 +51,27 @@ jobs:
     env:
       PTP_TEST_DATABASE_URL: postgresql://ptp:ptp@localhost:5432/ptp_test
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with: {python-version: "3.12", cache: pip}
       - run: pip install -e ".[dev]"
       - name: The pipeline definition, run by the KFP local runner
-        run: pytest -q -m kfp
+        run: scripts/ci_run.sh pytest -q -m kfp
 
   console:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults: {run: {working-directory: web}}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with: {node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json}
       - run: npm ci --no-audit --no-fund
-      - run: npm run check
+      - run: ../scripts/ci_run.sh npm run check
       - run: npm run build
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     services:
       postgres:
@@ -84,15 +84,15 @@ jobs:
       PTP_DATABASE_URL: postgresql://ptp:ptp@localhost:5432/ptp
       PTP_API_TOKENS: e2e-token
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with: {python-version: "3.12", cache: pip}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with: {node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json}
       - run: pip install -e ".[dev]"
       - name: A short season through the whole loop
         run: |
-          ptpsim run scenarios/dev/smoke.yaml --quiet | tee season.json
+          scripts/ci_run.sh ptpsim run scenarios/dev/smoke.yaml --quiet
           python -c "import json,sys; s=json.load(open('data/seasons/smoke/evaluation.json'))['summary']; print(s); sys.exit(1 if s['harmful_promoted'] else 0)"
       - name: Build the console
         working-directory: web
@@ -103,17 +103,17 @@ jobs:
           for i in $(seq 1 30); do curl -sf localhost:8000/api/health && break; sleep 1; done
       - name: Browser tests, desktop and phone
         working-directory: web
-        run: npx playwright test
-      - uses: actions/upload-artifact@v4
+        run: ../scripts/ci_run.sh npx playwright test
+      - uses: actions/upload-artifact@v5
         if: failure()
         with: {name: playwright-report, path: web/playwright-report, retention-days: 7}
 
   vespa:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with: {python-version: "3.12", cache: pip}
       - run: pip install -e ".[dev]"
       - name: Start Vespa
@@ -123,18 +123,18 @@ jobs:
           docker exec vespa vespa version || true
       - name: The package on a real Vespa
         env: {PTP_VESPA_URL: "http://127.0.0.1:8080", PTP_VESPA_CONFIG_URL: "http://127.0.0.1:19071"}
-        run: pytest -q -m vespa -s
+        run: scripts/ci_run.sh pytest -q -m vespa -s
       - if: failure()
         run: docker logs vespa 2>&1 | tail -n 80 | sed 's/^/::error ::/' | head -n 60
 
   triton:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
       - name: Make room for the Triton image
         run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL && df -h /
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with: {python-version: "3.12", cache: pip}
       - run: pip install -e ".[dev]"
       - name: Start Triton (explicit model control)
@@ -145,12 +145,12 @@ jobs:
           for i in $(seq 1 120); do curl -sf localhost:8000/v2/health/ready && break; sleep 3; done
       - name: The user tower on a real Triton
         env: {PTP_TRITON_URL: "http://127.0.0.1:8000", PTP_TRITON_REPOSITORY: data/triton}
-        run: pytest -q -m triton -s
+        run: scripts/ci_run.sh pytest -q -m triton -s
       - if: failure()
         run: docker logs triton 2>&1 | tail -n 60 | sed 's/^/::error ::/'
 
   kind:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     services:
       postgres:
@@ -160,14 +160,14 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U ptp" --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with: {python-version: "3.12", cache: pip}
       - run: pip install -e ".[dev]"
       - uses: helm/kind-action@v1
         with: {cluster_name: ci}
       - name: Build the image and load it into the cluster
-        run: docker build -t ranking-path-to-production:ci . && kind load docker-image ranking-path-to-production:ci --name ci
+        run: scripts/ci_run.sh docker build -t ranking-path-to-production:ci . && kind load docker-image ranking-path-to-production:ci --name ci
       - name: Point the CI overlay at the runner (docker bridge gateway of the kind network)
         run: |
           GW=$(docker network inspect kind -f '{{range .IPAM.Config}}{{.Gateway}} {{end}}' | tr ' ' '\n' | grep -E '^[0-9]+\.' | head -n1)
@@ -183,7 +183,7 @@ jobs:
           for i in $(seq 1 30); do curl -sf localhost:8090/healthz && break; sleep 1; done
       - name: The relay in the cluster
         env: {PTP_RELAY_URL: "http://127.0.0.1:8090", PTP_STAND_IN_URL: "http://127.0.0.1:9999"}
-        run: pytest -q -m kind -s
+        run: scripts/ci_run.sh pytest -q -m kind -s
       - if: failure()
         run: kubectl -n buyer-mlops logs deploy/relay --tail=60 | sed 's/^/::error ::/'; kubectl -n buyer-mlops get pods -o wide
 
@@ -192,7 +192,7 @@ jobs:
     # repository_dispatch to this repository; deploy-model.yml deploys the candidate to two real Vespa containers.
     if: github.event_name == 'push'
     needs: [python]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
       contents: write   # repository_dispatch
@@ -207,20 +207,20 @@ jobs:
     env:
       PTP_DATABASE_URL: postgresql://ptp:ptp@localhost:5432/ptp
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with: {python-version: "3.12", cache: pip}
       - run: pip install -e ".[dev]"
       - name: A short season, then one more training run
         run: |
-          ptpsim run scenarios/dev/smoke.yaml --quiet
+          scripts/ci_run.sh ptpsim run scenarios/dev/smoke.yaml --quiet
           export PTP_LAKE=data/seasons/smoke/lake PTP_ARTIFACTS=data/seasons/smoke/artifacts
           AS_OF=$(python -c "import json; print(json.load(open('data/seasons/smoke/registry.json'))['t0'] + 14*86400 + 3*3600)")
           export PTP_NOW=$AS_OF
           ptp pipeline run --kind ranker --as-of "$AS_OF" --run-id loop-ranker --no-publish | tee run.json
           python -c "import json,sys; r=json.load(open('run.json')); print('::notice title=candidate::'+json.dumps({k:r.get(k) for k in ('outcome','version','blocked')})); sys.exit(0 if r['outcome']=='candidate' else 1)"
           ptp ci bundle --dir bundle --docs data/seasons/smoke/vespa_docs.jsonl
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with: {name: ci-bundle, path: bundle, retention-days: 3}
       - name: Event -> Pub/Sub -> relay -> repository_dispatch
         env:

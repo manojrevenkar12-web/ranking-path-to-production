@@ -23,7 +23,7 @@ permissions:
 jobs:
   deploy:
     if: github.event.client_payload.env != 'ci'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     environment: production
     env:
@@ -40,8 +40,8 @@ jobs:
       VERSION: ${{ github.event.client_payload.version || inputs.version }}
       KIND: ${{ github.event.client_payload.kind || inputs.kind }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with: {python-version: "3.12"}
       - uses: google-github-actions/auth@v2
         with:
@@ -62,7 +62,7 @@ jobs:
   # bundled a registry. Two real Vespa containers stand in for staging and production.
   deploy-ci:
     if: github.event.client_payload.env == 'ci'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     services:
       postgres:
@@ -77,15 +77,15 @@ jobs:
       PTP_ARTIFACTS: data/artifacts
       VERSION: ${{ github.event.client_payload.version }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with: {python-version: "3.12", cache: pip}
       - run: pip install -e .
       - name: Start staging and production Vespa
         run: |
           docker run -d --name vespa-staging -p 18080:8080 -p 19071:19071 vespaengine/vespa
           docker run -d --name vespa-prod -p 28080:8080 -p 29071:19071 vespaengine/vespa
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: ci-bundle
           path: bundle
