@@ -1,5 +1,7 @@
 # ranking-path-to-production
 
+[![ci](https://github.com/manojrevenkar12-web/ranking-path-to-production/actions/workflows/ci.yml/badge.svg)](https://github.com/manojrevenkar12-web/ranking-path-to-production/actions/workflows/ci.yml)
+
 **The path to production for a second-hand marketplace's search ranker and homepage recommender: continuous
 training on Vertex AI Pipelines, the quality gates the pipelines lacked, ONNX models deployed to Vespa and Triton
 by a GitHub Action that a successful training run triggers, canaries decided by interleaving, and the lifecycle
@@ -109,16 +111,16 @@ this one has now been looked at.
 
 ## Tests
 
-82 Python tests (`pytest -q`; 48 need no database): the offline metric and its bootstrap, interleaving, the
+83 Python tests (`pytest -q`; 49 need no database): the offline metric and its bootstrap, interleaving, the
 Vespa package against the emulator, the relay's token check and exactly-once dispatch, the workflow files run by
 the GitHub emulator, data, model and export gates, deploys and canaries, the tower's two-phase rollout, the KFP
 pipelines on the local runner, Vertex submission against a stand-in, a tiny season through the whole loop, and
-three against real Vespa, Triton and Kubernetes (kind) in CI. The console has 14 unit tests (Vitest, against
+three against real Vespa, Triton and Kubernetes (kind) in CI. The console has 15 unit tests (Vitest, against
 answers captured from a dev season) and 5 browser tests on desktop and phone (Playwright).
 
 CI (`.github/workflows/ci.yml`) runs eight jobs: python, kfp, console, e2e, vespa, triton, kind, and the loop,
 which sends a real `repository_dispatch` to this repository and watches `deploy-model.yml` deploy the candidate to
-two Vespa containers.
+two Vespa containers. The last run of every job is green, including that dispatched deploy.
 
 ## Run it
 
