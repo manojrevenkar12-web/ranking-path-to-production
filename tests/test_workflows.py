@@ -109,3 +109,13 @@ def test_deploy_workflow_uses_workload_identity_and_serialises_per_surface() -> 
     assert wf["permissions"]["id-token"] == "write" and wf["permissions"]["contents"] == "read"
     assert wf["concurrency"]["cancel-in-progress"] is False
     assert "client_payload.kind" in wf["concurrency"]["group"]
+
+
+def test_every_workflow_file_is_valid_yaml_with_jobs() -> None:
+    # GitHub refuses a workflow that does not parse and runs nothing, without a job to annotate
+    for f in sorted((ROOT / ".github" / "workflows").glob("*.yml")):
+        doc = yaml.safe_load(f.read_text())
+        assert isinstance(doc, dict) and doc.get("jobs"), f.name
+        for name, job in doc["jobs"].items():
+            for step in job.get("steps", []):
+                assert "run" not in step or isinstance(step["run"], str), f"{f.name}:{name}"

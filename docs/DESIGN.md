@@ -32,7 +32,9 @@ same workflow switches the tower on (Triton load, coverage, parity, canary).
   model's data, compared query by query with a paired bootstrap, overall and per market (ADR 0003).
 - **Canaries interleave.** A canary gets 30% of a surface's sessions as one list merged from both models (team
   draft), and the canary check decides from which model members credited: roll back early on a clear preference
-  for production, overall or in a market; promote once the candidate's win share is not worse (ADR 0004).
+  for production, overall or in a market; promote once the candidate's win share is not worse (ADR 0004). The
+  homepage has about a third of search's sessions, so its canary takes 50% for up to 72 hours (search: 30%, 48 h);
+  at 30% the dev seasons' homepage canaries ran out of time before they had enough decided sessions.
 - **Exactly one deploy per version.** Pub/Sub delivers at least once and exit handlers can publish twice. The relay
   records message ids and dispatched runs in PostgreSQL and acknowledges only after GitHub accepted; the deploy is
   idempotent per version (an open deployment is reused), so a duplicate dispatch is a no-op.

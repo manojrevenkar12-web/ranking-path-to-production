@@ -20,7 +20,7 @@ ct-ranker: data gates > train > offline gates  ->  topic  --push-->  verify OIDC
                                                                                                      v
 staging Vespa: package + candidate profile, replay logged requests: score parity, skew, latency
 prod Vespa:    production + candidate + previous profile in one package (rollback is a routing change)
-canary:        30% of sessions interleave candidate and production; canary-check.yml promotes or rolls back
+canary:        30% of sessions (homepage 50%) interleave candidate and production; canary-check.yml decides
 ```
 
 | | What is here |
