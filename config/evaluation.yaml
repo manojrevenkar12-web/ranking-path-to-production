@@ -1,0 +1,12 @@
+# How a simulated season is judged against its truth (src/ptp/evaluate.py, the only reader of truth.json).
+# A release's true effect is its expected purchases per session against the model it would replace, computed from
+# the simulator's true utilities on fresh sessions, served the way production would have served it.
+
+harmful:
+  overall_drop: 0.01       # more than 1% fewer expected purchases overall
+  market_drop: 0.03        # or more than 3% fewer in any market
+beneficial:
+  overall_gain: 0.005
+broken:
+  # a release whose deploy would fail or serve garbage (non-finite scores, missing fields, zero results)
+  counts_as: harmful

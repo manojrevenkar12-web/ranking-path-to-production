@@ -1,0 +1,522 @@
+# PIPELINE DEFINITION
+# Name: ct-ranker
+# Description: Continuous training of the search ranker, with data, model and export gates.
+# Inputs:
+#    as_of: int
+#    lake_root: str
+#    overrides: str [Default: '{}']
+#    run_id: str
+components:
+  comp-condition-2:
+    dag:
+      tasks:
+        evaluate-ranker:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-evaluate-ranker
+          dependentTasks:
+          - train-ranker
+          inputs:
+            parameters:
+              run_id:
+                componentInputParameter: pipelinechannel--run_id
+          taskInfo:
+            name: evaluate-ranker
+        export-ranker:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-export-ranker
+          dependentTasks:
+          - evaluate-ranker
+          inputs:
+            parameters:
+              run_id:
+                componentInputParameter: pipelinechannel--run_id
+          taskInfo:
+            name: export-ranker
+        register-ranker:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-register-ranker
+          dependentTasks:
+          - export-ranker
+          inputs:
+            parameters:
+              run_id:
+                componentInputParameter: pipelinechannel--run_id
+          taskInfo:
+            name: register-ranker
+        train-ranker:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-train-ranker
+          inputs:
+            parameters:
+              run_id:
+                componentInputParameter: pipelinechannel--run_id
+          taskInfo:
+            name: train-ranker
+    inputDefinitions:
+      parameters:
+        pipelinechannel--run_id:
+          parameterType: STRING
+        pipelinechannel--validate-data-Output:
+          parameterType: STRING
+  comp-evaluate-ranker:
+    executorLabel: exec-evaluate-ranker
+    inputDefinitions:
+      parameters:
+        run_id:
+          parameterType: STRING
+    outputDefinitions:
+      artifacts:
+        metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-exit-handler-1:
+    dag:
+      tasks:
+        condition-2:
+          componentRef:
+            name: comp-condition-2
+          dependentTasks:
+          - validate-data
+          inputs:
+            parameters:
+              pipelinechannel--run_id:
+                componentInputParameter: pipelinechannel--run_id
+              pipelinechannel--validate-data-Output:
+                taskOutputParameter:
+                  outputParameterKey: Output
+                  producerTask: validate-data
+          taskInfo:
+            name: data-gates-passed
+          triggerPolicy:
+            condition: inputs.parameter_values['pipelinechannel--validate-data-Output']
+              == 'pass'
+        start-run:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-start-run
+          inputs:
+            parameters:
+              as_of:
+                componentInputParameter: pipelinechannel--as_of
+              kind:
+                runtimeValue:
+                  constant: ranker
+              overrides:
+                componentInputParameter: pipelinechannel--overrides
+              run_id:
+                componentInputParameter: pipelinechannel--run_id
+          taskInfo:
+            name: start-run
+        validate-data:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-validate-data
+          dependentTasks:
+          - start-run
+          inputs:
+            parameters:
+              as_of:
+                componentInputParameter: pipelinechannel--as_of
+              lake_root:
+                componentInputParameter: pipelinechannel--lake_root
+              overrides:
+                componentInputParameter: pipelinechannel--overrides
+              run_id:
+                componentInputParameter: pipelinechannel--run_id
+          taskInfo:
+            name: validate-data
+    inputDefinitions:
+      parameters:
+        pipelinechannel--as_of:
+          parameterType: NUMBER_INTEGER
+        pipelinechannel--lake_root:
+          parameterType: STRING
+        pipelinechannel--overrides:
+          parameterType: STRING
+        pipelinechannel--run_id:
+          parameterType: STRING
+  comp-export-ranker:
+    executorLabel: exec-export-ranker
+    inputDefinitions:
+      parameters:
+        run_id:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-publish-outcome:
+    executorLabel: exec-publish-outcome
+    inputDefinitions:
+      parameters:
+        kind:
+          parameterType: STRING
+        pipeline:
+          parameterType: STRING
+        run_id:
+          parameterType: STRING
+        status:
+          isOptional: true
+          parameterType: TASK_FINAL_STATUS
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-register-ranker:
+    executorLabel: exec-register-ranker
+    inputDefinitions:
+      parameters:
+        run_id:
+          parameterType: STRING
+    outputDefinitions:
+      artifacts:
+        model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-start-run:
+    executorLabel: exec-start-run
+    inputDefinitions:
+      parameters:
+        as_of:
+          parameterType: NUMBER_INTEGER
+        kind:
+          parameterType: STRING
+        overrides:
+          parameterType: STRING
+        run_id:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-train-ranker:
+    executorLabel: exec-train-ranker
+    inputDefinitions:
+      parameters:
+        run_id:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-validate-data:
+    executorLabel: exec-validate-data
+    inputDefinitions:
+      parameters:
+        as_of:
+          parameterType: NUMBER_INTEGER
+        lake_root:
+          parameterType: STRING
+        overrides:
+          parameterType: STRING
+        run_id:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-evaluate-ranker:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - evaluate_ranker
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef evaluate_ranker(run_id: str, metrics: dsl.Output[dsl.Metrics])\
+          \ -> str:\n    import json\n\n    from ptp.pipelines import steps\n\n  \
+          \  out = steps.evaluate(run_id)\n    metrics.log_metric(\"ips_dcg_delta\"\
+          , float(out[\"delta\"]))\n    return json.dumps(out)\n\n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+    exec-export-ranker:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - export_ranker
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef export_ranker(run_id: str) -> str:\n    import json\n\n    from\
+          \ ptp.pipelines import steps\n\n    return json.dumps(steps.export(run_id))\n\
+          \n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+    exec-publish-outcome:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - publish_outcome
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef publish_outcome(run_id: str, kind: str, pipeline: str, status:\
+          \ dsl.PipelineTaskFinalStatus) -> str:\n    import json\n\n    from ptp.pipelines\
+          \ import runner\n    from ptp.registry.store import Registry\n\n    failed\
+          \ = status.state not in (\"SUCCEEDED\", \"SUCCESS\")\n    if failed:\n \
+          \       reg = Registry()\n        row = reg.run(run_id) or {}\n        if\
+          \ row.get(\"state\") == \"RUNNING\":\n            reg.finish_run(run_id,\
+          \ \"FAILED\", \"error\", error=str(status.error_message or status.state))\n\
+          \    return json.dumps(runner.finish_and_publish(run_id, kind, pipeline,\
+          \ failed, publish=True), default=str)\n\n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+    exec-register-ranker:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - register_ranker
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef register_ranker(run_id: str, model: dsl.Output[dsl.Model]) ->\
+          \ str:\n    import json\n\n    from ptp.pipelines import steps\n    from\
+          \ ptp.registry.store import Registry\n\n    out = steps.register(run_id)\n\
+          \    outcome = \"candidate\" if out[\"status\"] == \"candidate\" else \"\
+          blocked\"\n    Registry().finish_run(run_id, \"SUCCEEDED\", outcome, out[\"\
+          version\"])\n    model.metadata.update({\"version\": out[\"version\"], \"\
+          status\": out[\"status\"]})\n    return json.dumps(out)\n\n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+    exec-start-run:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - start_run
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef start_run(run_id: str, kind: str, as_of: int, overrides: str)\
+          \ -> str:\n    import json\n\n    from ptp.registry.store import Registry\n\
+          \n    Registry().start_run(run_id, kind, \"kfp\", {\"as_of\": as_of, \"\
+          overrides\": json.loads(overrides)})\n    return run_id\n\n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+    exec-train-ranker:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - train_ranker
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef train_ranker(run_id: str) -> str:\n    import json\n\n    from\
+          \ ptp.pipelines import steps\n\n    return json.dumps(steps.train(run_id))\n\
+          \n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+    exec-validate-data:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - validate_data
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef validate_data(run_id: str, as_of: int, lake_root: str, overrides:\
+          \ str) -> str:\n    import json\n\n    from ptp.pipelines import steps\n\
+          \    from ptp.registry.store import Registry\n\n    out = steps.validate_data(run_id,\
+          \ as_of, lake_root, json.loads(overrides))\n    if not out[\"passed\"]:\n\
+          \        Registry().finish_run(run_id, \"SUCCEEDED\", \"blocked\")\n   \
+          \ return \"pass\" if out[\"passed\"] else \"block\"\n\n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+pipelineInfo:
+  description: Continuous training of the search ranker, with data, model and export
+    gates.
+  name: ct-ranker
+root:
+  dag:
+    tasks:
+      exit-handler-1:
+        componentRef:
+          name: comp-exit-handler-1
+        inputs:
+          parameters:
+            pipelinechannel--as_of:
+              componentInputParameter: as_of
+            pipelinechannel--lake_root:
+              componentInputParameter: lake_root
+            pipelinechannel--overrides:
+              componentInputParameter: overrides
+            pipelinechannel--run_id:
+              componentInputParameter: run_id
+        taskInfo:
+          name: exit-handler-1
+      publish-outcome:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-publish-outcome
+        dependentTasks:
+        - exit-handler-1
+        inputs:
+          parameters:
+            kind:
+              runtimeValue:
+                constant: ranker
+            pipeline:
+              runtimeValue:
+                constant: ct-ranker
+            run_id:
+              componentInputParameter: run_id
+            status:
+              taskFinalStatus:
+                producerTask: exit-handler-1
+        taskInfo:
+          name: publish-outcome
+        triggerPolicy:
+          strategy: ALL_UPSTREAM_TASKS_COMPLETED
+  inputDefinitions:
+    parameters:
+      as_of:
+        parameterType: NUMBER_INTEGER
+      lake_root:
+        parameterType: STRING
+      overrides:
+        defaultValue: '{}'
+        isOptional: true
+        parameterType: STRING
+      run_id:
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.17.3

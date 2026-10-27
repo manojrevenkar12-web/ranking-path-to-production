@@ -1,0 +1,24 @@
+name: season-b
+description: >
+  Dev season B: a logging bug drops a feature in one market, click logging loses events, a partition lands late,
+  a backfilled feature is computed differently at serving, a data scientist drops a feature and another turns
+  position debiasing off, and the item snapshot loses a market the day before a tower run. Written with the code.
+days: 24
+adopt_day: 7
+world: {seed: 11, search_sessions_per_day: 2000, homepage_sessions_per_day: 700}
+schedule:
+  ranker: {from_day: 9, every: 1}
+  tower: [11, 16, 21]
+delivery: {duplicate_every: 4}
+changes:
+  - {day: 12, kind: ranker, once: true, overrides: {features: [price_rel, log_age_days, condition, photo_quality, seller_rating, item_ctr, log_favourites, brand_affinity, price_fit, favourites_today], backfill: {favourites_today: {snapshot: previous_day}}}, note: momentum feature backfilled from the previous day's snapshot}
+  - {day: 14, kind: ranker, once: true, overrides: {features: [price_rel, log_age_days, condition, photo_quality, seller_rating, item_ctr, log_favourites, brand_affinity]}, note: drop price_fit to simplify}
+  - {day: 19, kind: ranker, once: true, overrides: {position_debias: false}, note: debiasing turned off while debugging}
+incidents:
+  - {type: null_feature, feature: seller_rating, market: FR, day: 10}
+  - {type: click_drop, market: DE, rate: 0.6, day: 16}
+  - {type: late_partition, day: 17, hours: 9}
+  - {type: snapshot_missing_market, market: PL, day: 20}
+operations:
+  - {day: 12, hour: 1, action: quarantine, table: impressions, from_day: 10, to_day: 10, market: FR, reason: seller_rating missing from FR match-feature logs}
+  - {day: 18, hour: 1, action: quarantine, table: impressions, from_day: 16, to_day: 16, market: DE, reason: click events lost in DE}

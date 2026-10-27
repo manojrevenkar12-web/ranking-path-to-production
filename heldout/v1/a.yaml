@@ -1,0 +1,43 @@
+name: heldout-v1-a
+description: >
+  A quiet three weeks with no incidents. After the hand-deployed ranker is adopted, the team does ordinary
+  tuning: a slower learning rate with more trees, a new live-popularity feature backfilled from the previous
+  day's item snapshot (no leakage), a wider homepage embedding, and a small tidy-up that reorders features
+  and gives favourites a little more weight in the labels. Mostly improvements or neutral changes; the point
+  is a season where nothing breaks and the platform should simply keep shipping.
+days: 21
+adopt_day: 7
+world: {seed: 2301, search_sessions_per_day: 1800, homepage_sessions_per_day: 650}
+schedule:
+  ranker: {from_day: 9, every: 1}
+  tower: [12, 18]
+delivery: {duplicate_every: 0}
+changes:
+  - day: 10
+    kind: ranker
+    overrides:
+      params: {n_estimators: 250, learning_rate: 0.04}
+    note: Hyperparameter sweep on last month's logs preferred more trees at a lower learning rate.
+  - day: 13
+    kind: ranker
+    overrides:
+      features: [price_rel, log_age_days, condition, photo_quality, seller_rating, item_ctr, log_favourites,
+                 brand_affinity, price_fit, favourites_today]
+      backfill: {favourites_today: {snapshot: previous_day}}
+    note: >
+      Add a trending signal. It is not in the impression logs, so it is backfilled from the snapshot of the day
+      before each impression, which is what serving will have at request time.
+  - day: 15
+    kind: tower
+    overrides: {dim: 64, epochs: 14}
+    note: Homepage team wants richer item embeddings now that the catalogue has grown.
+  - day: 17
+    kind: ranker
+    overrides:
+      labels: {purchase: 3, favourite: 2, click: 1}
+      features: [price_fit, price_rel, brand_affinity, item_ctr, log_favourites, favourites_today, condition,
+                 photo_quality, seller_rating, log_age_days]
+      backfill: {favourites_today: {snapshot: previous_day}}
+    note: Cosmetic refactor of the feature config, grouped by owner; labels restated explicitly, unchanged.
+incidents: []
+operations: []

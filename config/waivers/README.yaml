@@ -1,0 +1,3 @@
+# Waivers let one model version through one blocked gate, with an owner and an expiry. Add entries here by pull
+# request; the deploy workflow and the registry show who waived what and why.
+waivers: []

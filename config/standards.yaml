@@ -1,0 +1,31 @@
+# ML model lifecycle standards. `ptp standards check` scores every model in the registry against these, and the
+# console shows where each one falls short. A standard is a rule with a reason; change the rule, not the check.
+
+standards:
+  - id: owner
+    rule: Every model version names an owning team and an on-call rotation.
+    why: Someone has to answer when it misbehaves at 03:00.
+  - id: lineage
+    rule: Every model version records the pipeline run, the code commit, the data snapshot hash and its parameters.
+    why: A model that cannot be rebuilt cannot be debugged or audited.
+  - id: gates
+    rule: Every production model passed every block gate, or carries an unexpired waiver for the one it did not.
+    why: Gates are the definition of done; a waiver makes an exception visible and temporary.
+  - id: model_card
+    rule: Every production model has a model card with intended use, training window, metrics per market and known limits.
+  - id: freshness
+    rule: A production ranker is at most 3 days old; a production tower at most 14 days.
+    why: Second-hand inventory turns over fast; a stale model ranks a catalogue that no longer exists.
+    max_age_days: {ranker: 3, tower: 14}
+  - id: rollback
+    rule: Every production model has a rollback target still loaded (profile in the Vespa package, version in Triton).
+    why: Rolling back must be a routing change that takes seconds, not a redeploy.
+  - id: serving_parity
+    rule: Every production model passed score parity and skew on staging against the live catalogue.
+  - id: monitoring
+    rule: Every production model has a skew and drift check that ran in the last 24 hours.
+    max_age_hours: 24
+
+owners:
+  ranker: {team: search-relevance, oncall: search-relevance-oncall}
+  tower: {team: recommender-relevance, oncall: recsys-oncall}

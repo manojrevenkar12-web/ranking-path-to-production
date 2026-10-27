@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ptp-env
+data:
+  PTP_RELAY_AUDIENCE: https://ml-relay.buyer.internal/pubsub/push
+  PTP_RELAY_PUSH_SA: pubsub-push@vinted-buyer-ml-dev.iam.gserviceaccount.com
+  PTP_GITHUB_REPOSITORY: manojrevenkar12-web/ranking-path-to-production
+  PTP_ARTIFACTS: gs://buyer-ml-models
+  PTP_LAKE: gs://buyer-ml-lake

@@ -1,0 +1,47 @@
+name: heldout-v1-c
+description: >
+  A busy, error-prone season with a twice-daily-ish cadence (ranker every two days) and three homepage
+  retrains. A data scientist adds today's favourites backfilled from the end-of-day snapshot, which leaks
+  the future into training. The training image is upgraded and writes a newer ONNX IR version. The PL
+  listing feed sends prices in cents for two days, FR loses a share of clicks after an app release, GitHub
+  dispatches fail for a while, and the LT snapshot goes missing. Pub/Sub redelivers every third message.
+  The on-call quarantines the PL days and later rolls search back.
+days: 24
+adopt_day: 7
+world: {seed: 9032, search_sessions_per_day: 1600, homepage_sessions_per_day: 540}
+schedule:
+  ranker: {from_day: 9, every: 2}
+  tower: [10, 16, 22]
+delivery: {duplicate_every: 3}
+changes:
+  - day: 11
+    kind: ranker
+    overrides:
+      features: [price_rel, log_age_days, condition, photo_quality, seller_rating, item_ctr, log_favourites,
+                 brand_affinity, price_fit, favourites_today]
+      backfill: {favourites_today: {snapshot: same_day}}
+    note: >
+      Add today's favourites as a trending signal. The same-day snapshot matches the impression's date, so it
+      seemed the most accurate join.
+  - day: 15
+    kind: ranker
+    once: true
+    overrides:
+      export: {ir_version: 11}
+    note: >
+      Platform team bumped the training image to the latest onnx release for a security patch; the exporter
+      was pinned back the next day after serving complained about model loading.
+  - day: 17
+    kind: tower
+    overrides: {temperature: 0.05}
+    note: Paper suggests a sharper softmax temperature for in-batch negatives.
+incidents:
+  - {type: price_cents, market: PL, from_day: 13, to_day: 14}
+  - {type: click_drop, market: FR, rate: 0.4, day: 18}
+  - {type: dispatch_outage, failures: 3, day: 20}
+  - {type: snapshot_missing_market, market: LT, day: 21}
+operations:
+  - {day: 15, hour: 9, action: quarantine, table: impressions, from_day: 13, to_day: 14, market: PL,
+     reason: listing feed sent PL prices in cents on days 13-14}
+  - {day: 20, hour: 11, action: rollback, surface: search,
+     reason: FR click-through dashboards dropped sharply; rolling back search while we investigate}

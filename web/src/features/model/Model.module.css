@@ -1,0 +1,277 @@
+.railPanel {
+  margin-bottom: var(--space-5);
+  padding-block: var(--space-6);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 26rem);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.main,
+.aside2 {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.aside {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.note {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.plot {
+  margin: 0 0 var(--space-3);
+}
+
+.plotRows {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.plotRow {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr) 8.5rem;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.plotName {
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.plotTrack {
+  position: relative;
+  height: 1.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.zero,
+.margin {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: var(--rule) solid var(--ink-2);
+}
+
+.margin {
+  border-left: var(--stitch) dashed var(--stop);
+}
+
+.span {
+  position: absolute;
+  top: 35%;
+  height: 30%;
+  border-radius: 99px;
+}
+
+.spanPass {
+  background: var(--thread);
+}
+
+.spanStop {
+  background: var(--stop);
+}
+
+.spanThin {
+  background: var(--muted);
+  opacity: 0.6;
+}
+
+.point {
+  position: absolute;
+  top: 22%;
+  width: 0.55rem;
+  height: 56%;
+  margin-left: -0.275rem;
+  border-radius: 2px;
+  background: var(--ink);
+}
+
+.plotValue {
+  font-weight: 650;
+  text-align: right;
+}
+
+.plotN {
+  display: block;
+  font-weight: 400;
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+}
+
+.stages {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.stage h3 {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.stageCount {
+  font-weight: 400;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.gates {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: var(--rule) solid var(--line);
+}
+
+.gate {
+  border-bottom: var(--rule) solid var(--line);
+}
+
+.gateHead {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 15rem) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: baseline;
+  width: 100%;
+  padding: var(--space-3) 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gateName {
+  font-weight: 600;
+}
+
+.gateSummary {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.evidence {
+  overflow: hidden;
+}
+
+.evidence pre {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  max-height: 20rem;
+  overflow: auto;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+.gateId,
+.waiver {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  margin-bottom: var(--space-2);
+}
+
+.waiver {
+  color: var(--warn);
+}
+
+.deploys,
+.steps,
+.history,
+.findings {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deployHead {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  font-weight: 650;
+}
+
+.steps {
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: var(--stitch) solid var(--line);
+  font-size: var(--text-sm);
+}
+
+.stepOk strong {
+  color: var(--pass);
+}
+
+.stepBad strong {
+  color: var(--stop);
+}
+
+.history li {
+  display: grid;
+  gap: 2px;
+  font-size: var(--text-sm);
+}
+
+.histWhen {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+
+.card {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.card dt {
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+}
+
+.card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.card ul {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.findings li {
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 64rem) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  .gateHead {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+  }
+  .gateSummary {
+    grid-column: 1 / -1;
+  }
+  .plotRow {
+    grid-template-columns: 4.5rem minmax(0, 1fr) 5.5rem;
+  }
+}

@@ -1,0 +1,46 @@
+# Default deny, then only what each workload needs. The relay takes Pub/Sub pushes through the ingress; Triton
+# takes requests from the homepage service's namespace only.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: relay-ingress
+spec:
+  podSelector:
+    matchLabels: {app: relay}
+  ingress:
+    - ports:
+        - {port: 8090}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: triton-from-homepage
+spec:
+  podSelector:
+    matchLabels: {app: triton}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: homepage}
+      ports:
+        - {port: 8000}
+        - {port: 8001}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: console-ingress
+spec:
+  podSelector:
+    matchLabels: {app: console}
+  ingress:
+    - ports:
+        - {port: 8000}

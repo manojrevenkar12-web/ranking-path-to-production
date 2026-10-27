@@ -1,0 +1,87 @@
+# The feature contract between training and serving.
+#
+# Every ranking feature is computed in one place only: Vespa, as a rank-profile function over document
+# attributes and query inputs. Vespa returns the computed values as match-features with every hit, the search
+# service logs them next to the impression, and training reads those logs. Training never recomputes a feature,
+# so the model learns from exactly what serving computed.
+#
+# A feature that was not logged yet (a new one) can be backfilled from item snapshots taken *before* the
+# impression; `provenance` in the training set records which way each column was produced, and the provenance
+# gate checks the timestamps, not this file.
+
+documents:
+  item:
+    fields:
+      item_id: {type: string, index: attribute}
+      market: {type: string, index: fast-search}
+      category: {type: string, index: fast-search}
+      brand: {type: string, index: attribute}
+      brand_t: {type: "tensor<float>(brand{})", index: attribute}
+      price: {type: float, index: attribute}
+      category_median_price: {type: float, index: attribute}
+      condition: {type: int, index: attribute}
+      photo_quality: {type: float, index: attribute}
+      seller_rating: {type: float, index: attribute}
+      listed_at: {type: long, index: attribute}
+      clicks_7d: {type: int, index: attribute}
+      impressions_7d: {type: int, index: attribute}
+      favourites: {type: int, index: attribute}
+      favourites_today: {type: int, index: attribute}   # live counter, reset at midnight
+      sold: {type: bool, index: attribute}
+      # tower versions whose item embedding this document carries; the coverage gate counts on it
+      emb_versions: {type: "array<string>", index: fast-search}
+
+query_inputs:
+  now: double
+  user_brand: "tensor<float>(brand{})"
+  user_log_price: double
+
+ranker:
+  # first phase is cheap and runs on every match; the model runs in the second phase on the best `rerank_count`
+  first_phase: item_ctr
+  rerank_count: 200
+  features:
+    - name: price_rel
+      expression: attribute(price) / attribute(category_median_price)
+      range: [0.0, 50.0]
+    - name: log_age_days
+      expression: log(1 + (query(now) - attribute(listed_at)) / 86400)
+      range: [0.0, 8.0]
+    - name: condition
+      expression: attribute(condition)
+      range: [0, 3]
+    - name: photo_quality
+      expression: attribute(photo_quality)
+      range: [0.0, 1.0]
+    - name: seller_rating
+      expression: attribute(seller_rating)
+      range: [1.0, 5.0]
+    - name: item_ctr
+      expression: (attribute(clicks_7d) + 1) / (attribute(impressions_7d) + 20)
+      range: [0.0, 1.0]
+    - name: log_favourites
+      expression: log(1 + attribute(favourites))
+      range: [0.0, 12.0]
+    - name: brand_affinity
+      expression: sum(query(user_brand) * attribute(brand_t))
+      range: [0.0, 1.0]
+    - name: price_fit
+      expression: abs(log(attribute(price)) - query(user_log_price))
+      range: [0.0, 10.0]
+    # Not logged yet: a model that wants it must backfill it from item snapshots taken before the impression.
+    - name: favourites_today
+      expression: attribute(favourites_today)
+      range: [0, 500]
+      logged: false
+
+taxonomy:
+  markets: [FR, DE, PL, LT]
+  categories: [dresses, jeans, sneakers, jackets, bags, tops, kids, home, books, coats]
+
+tower:
+  # Homepage retrieval: a user tower served on Triton embeds the member, Vespa finds the nearest items.
+  dim: 32
+  user_features: [market, category_interest, log_price_band, brand_hash]
+  item_features: [category, brand_hash, price_rel, condition, photo_quality]
+  brand_buckets: 16
+  target_hits: 100

@@ -1,0 +1,30 @@
+# Continuous training. The same pipeline definition runs on Vertex AI Pipelines and, for development and the
+# simulated seasons, on the KFP local runner or in-process (`--engine direct`, the same step functions).
+
+vertex:
+  project: ${PTP_GCP_PROJECT:-vinted-buyer-ml-dev}
+  location: ${PTP_GCP_REGION:-europe-west1}
+  pipeline_root: ${PTP_PIPELINE_ROOT:-gs://buyer-ml-pipelines/root}
+  service_account: ${PTP_PIPELINE_SA:-ct-pipelines@vinted-buyer-ml-dev.iam.gserviceaccount.com}
+  image: ${PTP_IMAGE:-europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest}
+  enable_caching: false
+  labels: {domain: buyer, owner: buyer-mlops}
+
+schedules:
+  ranker: "0 3 * * *"         # daily, after the impression logs for the previous day are complete
+  tower: "0 4 * * 1"          # weekly
+  item_embeddings: on_demand  # run by the tower rollout, never on a schedule
+
+# how the deploy workflow starts the item-embeddings batch scoring: vertex (submit a pipeline job) or direct
+scoring_engine: ${PTP_SCORING_ENGINE:-direct}
+
+events:
+  # Every pipeline run ends with an exit handler that publishes its final state, success or not.
+  topic: ${PTP_EVENTS_TOPIC:-projects/vinted-buyer-ml-dev/topics/ml-pipeline-events}
+  sink: ${PTP_EVENTS_SINK:-pubsub}   # pubsub on Vertex; http-push locally (posts the Pub/Sub push envelope)
+  push_url: ${PTP_RELAY_URL:-http://127.0.0.1:8090/pubsub/push}
+
+lake: ${PTP_LAKE:-data/lake}   # BigQuery exports in gs://buyer-ml-lake on GCP
+
+artifacts:
+  root: ${PTP_ARTIFACTS:-data/artifacts}   # gs://buyer-ml-models on GCP

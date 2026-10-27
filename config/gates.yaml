@@ -1,0 +1,98 @@
+# Quality gates. Each gate has an id that appears in the registry, the console and the model card.
+# `block` gates stop the release; `warn` gates are recorded and shown, and a waiver can never be needed for them.
+# A blocked release can only continue with a waiver in config/waivers/ that names the model version, the gate,
+# an owner and an expiry date.
+
+segments:
+  market: [FR, DE, PL, LT]   # same as taxonomy.markets in features.yaml (tests/test_config.py)
+
+data:
+  window_days: 8            # training window, ending at the newest complete partition
+  holdout_days: 2           # newest day(s) are the time-split holdout
+  freshness_max_hours: 12   # yesterday's partition lands by 00:30; at 03:00 anything older than 12 h means it is missing
+  volume_band: 0.5          # rows per market within ±50% of the trailing median of daily volumes
+  null_rate_max_increase: 0.02   # per feature and market, versus the champion's training set
+  duplicate_rate_max: 0.005      # per day and market
+  range_violation_max: 0.01      # share of a feature's values outside the contract range, per market
+  label_rate_band: 0.4      # click rate per market on the newest day within ±40% (relative) of the day before
+  label_rate_min_rows: 200
+  min_queries_per_market: 300
+  provenance_missing_max: 0.5    # a training feature missing from more than half the rows was not served
+
+model:
+  metric: ips-dcg@10
+  bootstrap_samples: 400
+  confidence: 0.95
+  # Continuous training ships refreshes that are not worse; it does not wait for an improvement. The metric is
+  # IPS-weighted DCG on the time-split holdout (unnormalised: see gates/model.py), compared query by query with a
+  # paired bootstrap; interleaving in the canary then checks the same question on live traffic.
+  non_inferiority_margin: 0.02        # relative: lower bound of (candidate - champion) / champion > -2%
+  segment_non_inferiority_margin: 0.08
+  too_good_to_be_true: 0.3            # relative gain above this is held for review (leakage, label bugs)
+  importance_concentration_max: 0.6   # one feature carrying more than 60% of total gain: warn
+  # Offline metrics are inverse-propensity weighted with the position bias measured on exploration traffic.
+  ips_max_weight: 20
+  propensity_min_sessions: 300
+
+tower:
+  metric: recall@50
+  join_coverage_min: 0.4   # interactions with items listed that day have no previous-day snapshot to join
+  non_inferiority_margin: 0.02
+  segment_non_inferiority_margin: 0.05
+  too_good_to_be_true: 0.25
+  # With no tower in production the comparison is with popularity, which logged positives favour (they were
+  # chosen by models that lean on popularity): informative only. The floor is against random retrieval.
+  random_recall_multiple_min: 3.0
+
+export:
+  # Native model vs onnxruntime on the holdout. Tree runtimes compare float32 inputs with float32 thresholds, so a
+  # value that sits exactly on a split can take the other branch: allow a tiny share of such rows, never a gross error.
+  onnx_parity_tolerance: 1.0e-4
+  onnx_parity_mismatch_share_max: 0.002
+  onnx_parity_max_abs: 0.25
+  max_model_bytes: 50000000
+
+serving:
+  # Run against staging by the deploy workflow, after the candidate profile is deployed there.
+  sample_queries: 120
+  score_parity_max_abs: 1.0e-3   # Vespa's relevance vs the model run offline on Vespa's own match-features
+  skew_psi_max: 0.25             # per feature: staging match-features vs the training set
+  latency_p95_ms: 40.0
+  embedding_coverage_min: 0.995  # share of live items that carry the new embedding field before a tower switch
+
+canary:
+  # The canary is team-draft interleaving: members in the canary share see one list merged from production and the
+  # candidate, and every click, favourite and purchase is credited to the model that contributed the item.
+  mode: interleave
+  traffic_share: 0.3
+  credit: {click: 1, favourite: 2, purchase: 3}
+  confidence: 0.95
+  min_decided_sessions: 250        # sessions where one model got more credit than the other
+  non_inferiority_win_share: 0.45  # promote when the lower bound of the candidate's win share is above this
+  market_min_decided: 80
+  market_non_inferiority_win_share: 0.35
+  rollback_confidence: 0.99        # roll back early when the candidate is clearly preferred less (upper bound < 0.5)
+  max_hours: 48
+  zero_result_rate_max: 0.02
+
+gates:
+  data.freshness: block
+  data.volume: block
+  data.null_rate: block
+  data.range: block
+  data.duplicates: warn      # the builder drops duplicate impression ids; the gate pages the logging owners
+  data.label_rate: block
+  data.provenance: block
+  data.propensity: warn
+  model.non_inferiority: block
+  model.segment_non_inferiority: block
+  model.too_good_to_be_true: warn   # pages the owner; provenance catches leakage, interleaving the rest
+  model.importance_concentration: warn
+  export.onnx_parity: block
+  export.target_compat: block
+  export.size: block
+  serving.score_parity: block
+  serving.skew: block
+  serving.latency: block
+  serving.embedding_coverage: block
+  canary.guard: block

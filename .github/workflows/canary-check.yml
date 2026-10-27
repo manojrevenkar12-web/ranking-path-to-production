@@ -1,0 +1,36 @@
+# Promotes or rolls back canaries. Hourly: a canary needs a day of traffic, and a breakage should not wait longer
+# than an hour to be rolled back.
+name: canary-check
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: canary-check
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      PTP_DATABASE_URL: ${{ secrets.PTP_DATABASE_URL }}
+      PTP_LAKE: gs://buyer-ml-lake
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+      - run: pip install -e ".[gcp]"
+      - name: Promote or roll back
+        run: ptp deploy check-canaries

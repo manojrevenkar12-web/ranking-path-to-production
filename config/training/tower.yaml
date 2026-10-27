@@ -1,0 +1,12 @@
+# Homepage retrieval two-tower model, owned by Recommender Relevance. Trained on homepage clicks and purchases with
+# in-batch negatives; the user tower is served on Triton, item embeddings are batch-scored into Vespa.
+model: tower
+dim: 32
+hidden: 64
+epochs: 12
+batch_size: 256
+learning_rate: 0.02
+temperature: 0.1
+random_state: 11
+export:
+  target_opset: 17

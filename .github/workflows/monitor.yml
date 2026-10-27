@@ -1,0 +1,34 @@
+# Daily skew and drift check of the production models, and the lifecycle standards report.
+name: monitor
+
+on:
+  schedule:
+    - cron: "41 5 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    env:
+      PTP_DATABASE_URL: ${{ secrets.PTP_DATABASE_URL }}
+      PTP_LAKE: gs://buyer-ml-lake
+      PTP_ARTIFACTS: gs://buyer-ml-models
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+      - run: pip install -e ".[gcp]"
+      - name: Skew and drift
+        run: ptp monitor run
+      - name: Lifecycle standards
+        run: ptp standards check

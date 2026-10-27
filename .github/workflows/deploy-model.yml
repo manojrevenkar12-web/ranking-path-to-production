@@ -1,0 +1,107 @@
+# Deploys a model version when the relay reports a successful training run (or a finished item-embeddings batch).
+# Started by repository_dispatch from the relay, which receives the Vertex AI pipeline's exit-handler event over
+# Pub/Sub. One deploy per surface at a time; a repeated dispatch for the same version is a no-op in `ptp deploy`.
+name: deploy-model
+
+on:
+  repository_dispatch:
+    types: [model-ready]
+  workflow_dispatch:
+    inputs:
+      version: {description: "model version (r0007, t0003)", required: true}
+      kind: {description: "ranker or tower", required: true, default: ranker}
+
+concurrency:
+  group: deploy-${{ github.event.client_payload.kind || inputs.kind }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read     # the CI loop's bundle is an artifact of the run that dispatched
+  id-token: write   # workload identity federation to GCP, no stored keys
+
+jobs:
+  deploy:
+    if: github.event.client_payload.env != 'ci'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
+    env:
+      PTP_DATABASE_URL: ${{ secrets.PTP_DATABASE_URL }}
+      PTP_ARTIFACTS: gs://buyer-ml-models
+      PTP_LAKE: gs://buyer-ml-lake
+      PTP_SCORING_ENGINE: vertex
+      PTP_VESPA_STAGING_URL: ${{ vars.VESPA_STAGING_URL }}
+      PTP_VESPA_STAGING_CONFIG_URL: ${{ vars.VESPA_STAGING_CONFIG_URL }}
+      PTP_VESPA_PROD_URL: ${{ vars.VESPA_PROD_URL }}
+      PTP_VESPA_PROD_CONFIG_URL: ${{ vars.VESPA_PROD_CONFIG_URL }}
+      PTP_TRITON_STAGING_URL: ${{ vars.TRITON_STAGING_URL }}
+      PTP_TRITON_PROD_URL: ${{ vars.TRITON_PROD_URL }}
+      VERSION: ${{ github.event.client_payload.version || inputs.version }}
+      KIND: ${{ github.event.client_payload.kind || inputs.kind }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+      - run: pip install -e ".[gcp]"
+      - name: Deploy the candidate (staging, serving gates, production, canary)
+        if: github.event.client_payload.outcome != 'embeddings_ready'
+        run: ptp deploy run --version "${{ github.event.client_payload.version || inputs.version }}" --kind "${{ github.event.client_payload.kind || inputs.kind }}" --trigger "dispatch:${{ github.event.client_payload.run_id || 'manual' }}"
+      - name: Switch on a tower whose item embeddings are ready
+        if: github.event.client_payload.outcome == 'embeddings_ready'
+        run: ptp deploy embeddings-ready --version "${{ github.event.client_payload.version }}" --trigger "dispatch:${{ github.event.client_payload.run_id }}"
+      - name: Show the deployment
+        if: always()
+        run: ptp registry show --version "${{ github.event.client_payload.version || inputs.version }}"
+
+  # The same deploy, run for real by CI (ci.yml job `loop`): the relay's dispatch carries env=ci and the run that
+  # bundled a registry. Two real Vespa containers stand in for staging and production.
+  deploy-ci:
+    if: github.event.client_payload.env == 'ci'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env: {POSTGRES_USER: ptp, POSTGRES_PASSWORD: ptp, POSTGRES_DB: ptp}
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ptp" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PTP_DATABASE_URL: postgresql://ptp:ptp@localhost:5432/ptp
+      PTP_LAKE: data/lake
+      PTP_ARTIFACTS: data/artifacts
+      VERSION: ${{ github.event.client_payload.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -e .
+      - name: Start staging and production Vespa
+        run: |
+          docker run -d --name vespa-staging -p 18080:8080 -p 19071:19071 vespaengine/vespa
+          docker run -d --name vespa-prod -p 28080:8080 -p 29071:19071 vespaengine/vespa
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-bundle
+          path: bundle
+          run-id: ${{ github.event.client_payload.bundle_run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Restore the registry and seed both Vespas with the production package and the catalogue
+        run: |
+          echo "PTP_NOW=$(python -c "import json; print(json.load(open('bundle/meta.json'))['now'])")" >> "$GITHUB_ENV"
+          ptp ci restore --dir bundle
+          PTP_NOW=$(python -c "import json; print(json.load(open('bundle/meta.json'))['now'])") ptp ci seed-vespa --docs bundle/vespa_docs.jsonl
+      - name: Deploy the candidate (staging, serving gates, production, canary)
+        run: ptp deploy run --version "${{ github.event.client_payload.version }}" --kind ranker --trigger "dispatch:${{ github.event.client_payload.run_id }}"
+      - name: Check the deployment
+        if: always()
+        run: ptp ci verify --version "${{ github.event.client_payload.version }}"
+      - if: failure()
+        run: |
+          docker logs vespa-staging 2>&1 | tail -n 40 | sed 's/^/::error title=vespa-staging::/'
+          docker logs vespa-prod 2>&1 | tail -n 20 | sed 's/^/::error title=vespa-prod::/'

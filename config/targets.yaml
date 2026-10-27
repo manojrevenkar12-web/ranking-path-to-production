@@ -1,0 +1,42 @@
+# Where models are served, and what those runtimes accept. Exports are checked against this before anything is
+# deployed: an opset or IR version a runtime cannot load fails in the pipeline, not in production.
+
+vespa:
+  version: "8.600"
+  onnx:
+    max_ir_version: 10
+    max_opset: {"": 21, "ai.onnx.ml": 4}
+    max_bytes: 2000000000      # Vespa ranking only takes self-contained ONNX models below 2 GB
+  application: default
+  environments:
+    staging:
+      query_url: ${PTP_VESPA_STAGING_URL:-http://127.0.0.1:18080}
+      config_url: ${PTP_VESPA_STAGING_CONFIG_URL:-http://127.0.0.1:19071}
+    prod:
+      query_url: ${PTP_VESPA_PROD_URL:-http://127.0.0.1:28080}
+      config_url: ${PTP_VESPA_PROD_CONFIG_URL:-http://127.0.0.1:29071}
+  deploy_timeout_s: 300
+  # Profiles kept in the package: the production one, the canary, and one previous for an instant rollback.
+  keep_profiles: 3
+
+triton:
+  version: "24.08"
+  onnx:
+    max_ir_version: 10
+    max_opset: {"": 20}
+  model_name: user_tower
+  max_batch_size: 64
+  # Two versions loaded at once: the production one and the canary. Clients address versions explicitly.
+  versions_loaded: 2
+  environments:
+    staging:
+      url: ${PTP_TRITON_STAGING_URL:-http://127.0.0.1:18000}
+      repository: ${PTP_TRITON_STAGING_REPOSITORY:-data/triton/staging}
+    prod:
+      url: ${PTP_TRITON_PROD_URL:-http://127.0.0.1:28000}
+      repository: ${PTP_TRITON_PROD_REPOSITORY:-data/triton/prod}
+
+github:
+  api: ${PTP_GITHUB_API:-https://api.github.com}
+  repository: ${PTP_GITHUB_REPOSITORY:-manojrevenkar12-web/ranking-path-to-production}
+  event_type: model-ready

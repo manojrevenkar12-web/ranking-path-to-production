@@ -1,0 +1,39 @@
+# kind in CI: the relay alone, image loaded into the cluster, talking to PostgreSQL and the GitHub/JWKS stand-in
+# that run on the runner (reachable from kind nodes at the docker bridge gateway).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: buyer-mlops
+resources:
+  - ../../base/namespace.yaml
+  - ../../base/serviceaccounts.yaml
+  - ../../base/config.yaml
+  - ../../base/relay.yaml
+  - ../../base/networkpolicy.yaml
+  - secrets.yaml
+images:
+  - name: ptp
+    newName: ranking-path-to-production
+    newTag: ci
+patches:
+  - target: {kind: Deployment, name: relay}
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value: {name: PTP_RELAY_JWKS_URL, value: "http://172.18.0.1:9999/oauth2/v3/certs"}
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value: {name: PTP_GITHUB_API, value: "http://172.18.0.1:9999"}
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value: {name: PTP_GITHUB_REPOSITORY, value: "ci/relay"}
+  - target: {kind: HorizontalPodAutoscaler, name: relay}
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1

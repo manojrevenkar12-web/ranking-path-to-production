@@ -1,0 +1,51 @@
+# Triton serves the homepage user tower. Explicit model control: nothing loads unless the deploy workflow asks,
+# and the config pins exactly the versions to keep (production, canary, rollback target).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triton
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: triton}
+  template:
+    metadata:
+      labels: {app: triton}
+    spec:
+      serviceAccountName: triton
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: triton
+          image: nvcr.io/nvidia/tritonserver:24.08-py3
+          args:
+            - tritonserver
+            - --model-repository=gs://buyer-ml-models/triton
+            - --model-control-mode=explicit
+            - --strict-model-config=true
+            - --exit-on-error=false
+          ports:
+            - {name: http, containerPort: 8000}
+            - {name: grpc, containerPort: 8001}
+            - {name: metrics, containerPort: 8002}
+          readinessProbe:
+            httpGet: {path: /v2/health/ready, port: http}
+            periodSeconds: 5
+          resources:
+            requests: {cpu: "2", memory: 4Gi}
+            limits: {memory: 6Gi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triton
+spec:
+  selector: {app: triton}
+  ports:
+    - {name: http, port: 8000, targetPort: http}
+    - {name: grpc, port: 8001, targetPort: grpc}

@@ -1,0 +1,20 @@
+# What the Search Relevance data scientists change. The pipeline reads this file at run time; a change here is a
+# pull request reviewed by the team that owns the model. Labels are graded: purchase 3, favourite 2, click 1.
+model: ranker
+features: [price_rel, log_age_days, condition, photo_quality, seller_rating, item_ctr, log_favourites, brand_affinity, price_fit]
+backfill: {}
+labels: {purchase: 3, favourite: 2, click: 1}
+position_debias: true
+params:
+  objective: lambdarank
+  n_estimators: 150
+  learning_rate: 0.06
+  num_leaves: 31
+  min_child_samples: 40
+  subsample: 0.8
+  subsample_freq: 1
+  colsample_bytree: 0.9
+  lambdarank_truncation_level: 20
+  random_state: 7
+export:
+  target_opset: 15

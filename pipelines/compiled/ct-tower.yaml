@@ -1,0 +1,455 @@
+# PIPELINE DEFINITION
+# Name: ct-tower
+# Description: Training of the homepage two-tower model: user tower for Triton, item tower for batch scoring.
+# Inputs:
+#    as_of: int
+#    lake_root: str
+#    overrides: str [Default: '{}']
+#    run_id: str
+components:
+  comp-condition-2:
+    dag:
+      tasks:
+        tower-stage-2:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-tower-stage-2
+          inputs:
+            parameters:
+              as_of:
+                componentInputParameter: pipelinechannel--as_of
+              lake_root:
+                componentInputParameter: pipelinechannel--lake_root
+              overrides:
+                componentInputParameter: pipelinechannel--overrides
+              run_id:
+                componentInputParameter: pipelinechannel--run_id
+              stage:
+                runtimeValue:
+                  constant: train
+          taskInfo:
+            name: tower-stage-2
+        tower-stage-3:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-tower-stage-3
+          dependentTasks:
+          - tower-stage-2
+          inputs:
+            parameters:
+              as_of:
+                componentInputParameter: pipelinechannel--as_of
+              lake_root:
+                componentInputParameter: pipelinechannel--lake_root
+              overrides:
+                componentInputParameter: pipelinechannel--overrides
+              run_id:
+                componentInputParameter: pipelinechannel--run_id
+              stage:
+                runtimeValue:
+                  constant: register
+          taskInfo:
+            name: tower-stage-3
+    inputDefinitions:
+      parameters:
+        pipelinechannel--as_of:
+          parameterType: NUMBER_INTEGER
+        pipelinechannel--lake_root:
+          parameterType: STRING
+        pipelinechannel--overrides:
+          parameterType: STRING
+        pipelinechannel--run_id:
+          parameterType: STRING
+        pipelinechannel--tower-stage-Output:
+          parameterType: STRING
+  comp-exit-handler-1:
+    dag:
+      tasks:
+        condition-2:
+          componentRef:
+            name: comp-condition-2
+          dependentTasks:
+          - tower-stage
+          inputs:
+            parameters:
+              pipelinechannel--as_of:
+                componentInputParameter: pipelinechannel--as_of
+              pipelinechannel--lake_root:
+                componentInputParameter: pipelinechannel--lake_root
+              pipelinechannel--overrides:
+                componentInputParameter: pipelinechannel--overrides
+              pipelinechannel--run_id:
+                componentInputParameter: pipelinechannel--run_id
+              pipelinechannel--tower-stage-Output:
+                taskOutputParameter:
+                  outputParameterKey: Output
+                  producerTask: tower-stage
+          taskInfo:
+            name: data-gates-passed
+          triggerPolicy:
+            condition: inputs.parameter_values['pipelinechannel--tower-stage-Output']
+              == 'pass'
+        start-run:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-start-run
+          inputs:
+            parameters:
+              as_of:
+                componentInputParameter: pipelinechannel--as_of
+              kind:
+                runtimeValue:
+                  constant: tower
+              overrides:
+                componentInputParameter: pipelinechannel--overrides
+              run_id:
+                componentInputParameter: pipelinechannel--run_id
+          taskInfo:
+            name: start-run
+        tower-stage:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-tower-stage
+          dependentTasks:
+          - start-run
+          inputs:
+            parameters:
+              as_of:
+                componentInputParameter: pipelinechannel--as_of
+              lake_root:
+                componentInputParameter: pipelinechannel--lake_root
+              overrides:
+                componentInputParameter: pipelinechannel--overrides
+              run_id:
+                componentInputParameter: pipelinechannel--run_id
+              stage:
+                runtimeValue:
+                  constant: data
+          taskInfo:
+            name: tower-stage
+    inputDefinitions:
+      parameters:
+        pipelinechannel--as_of:
+          parameterType: NUMBER_INTEGER
+        pipelinechannel--lake_root:
+          parameterType: STRING
+        pipelinechannel--overrides:
+          parameterType: STRING
+        pipelinechannel--run_id:
+          parameterType: STRING
+  comp-publish-outcome:
+    executorLabel: exec-publish-outcome
+    inputDefinitions:
+      parameters:
+        kind:
+          parameterType: STRING
+        pipeline:
+          parameterType: STRING
+        run_id:
+          parameterType: STRING
+        status:
+          isOptional: true
+          parameterType: TASK_FINAL_STATUS
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-start-run:
+    executorLabel: exec-start-run
+    inputDefinitions:
+      parameters:
+        as_of:
+          parameterType: NUMBER_INTEGER
+        kind:
+          parameterType: STRING
+        overrides:
+          parameterType: STRING
+        run_id:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-tower-stage:
+    executorLabel: exec-tower-stage
+    inputDefinitions:
+      parameters:
+        as_of:
+          parameterType: NUMBER_INTEGER
+        lake_root:
+          parameterType: STRING
+        overrides:
+          parameterType: STRING
+        run_id:
+          parameterType: STRING
+        stage:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-tower-stage-2:
+    executorLabel: exec-tower-stage-2
+    inputDefinitions:
+      parameters:
+        as_of:
+          parameterType: NUMBER_INTEGER
+        lake_root:
+          parameterType: STRING
+        overrides:
+          parameterType: STRING
+        run_id:
+          parameterType: STRING
+        stage:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-tower-stage-3:
+    executorLabel: exec-tower-stage-3
+    inputDefinitions:
+      parameters:
+        as_of:
+          parameterType: NUMBER_INTEGER
+        lake_root:
+          parameterType: STRING
+        overrides:
+          parameterType: STRING
+        run_id:
+          parameterType: STRING
+        stage:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-publish-outcome:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - publish_outcome
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef publish_outcome(run_id: str, kind: str, pipeline: str, status:\
+          \ dsl.PipelineTaskFinalStatus) -> str:\n    import json\n\n    from ptp.pipelines\
+          \ import runner\n    from ptp.registry.store import Registry\n\n    failed\
+          \ = status.state not in (\"SUCCEEDED\", \"SUCCESS\")\n    if failed:\n \
+          \       reg = Registry()\n        row = reg.run(run_id) or {}\n        if\
+          \ row.get(\"state\") == \"RUNNING\":\n            reg.finish_run(run_id,\
+          \ \"FAILED\", \"error\", error=str(status.error_message or status.state))\n\
+          \    return json.dumps(runner.finish_and_publish(run_id, kind, pipeline,\
+          \ failed, publish=True), default=str)\n\n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+    exec-start-run:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - start_run
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef start_run(run_id: str, kind: str, as_of: int, overrides: str)\
+          \ -> str:\n    import json\n\n    from ptp.registry.store import Registry\n\
+          \n    Registry().start_run(run_id, kind, \"kfp\", {\"as_of\": as_of, \"\
+          overrides\": json.loads(overrides)})\n    return run_id\n\n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+    exec-tower-stage:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - tower_stage
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef tower_stage(run_id: str, as_of: int, lake_root: str, overrides:\
+          \ str, stage: str) -> str:\n    import json\n\n    from ptp.pipelines import\
+          \ tower_steps\n\n    out = tower_steps.STAGES[stage](run_id, as_of, lake_root,\
+          \ json.loads(overrides))\n    return out if isinstance(out, str) else json.dumps(out,\
+          \ default=str)\n\n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+    exec-tower-stage-2:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - tower_stage
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef tower_stage(run_id: str, as_of: int, lake_root: str, overrides:\
+          \ str, stage: str) -> str:\n    import json\n\n    from ptp.pipelines import\
+          \ tower_steps\n\n    out = tower_steps.STAGES[stage](run_id, as_of, lake_root,\
+          \ json.loads(overrides))\n    return out if isinstance(out, str) else json.dumps(out,\
+          \ default=str)\n\n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+    exec-tower-stage-3:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - tower_stage
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.17.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef tower_stage(run_id: str, as_of: int, lake_root: str, overrides:\
+          \ str, stage: str) -> str:\n    import json\n\n    from ptp.pipelines import\
+          \ tower_steps\n\n    out = tower_steps.STAGES[stage](run_id, as_of, lake_root,\
+          \ json.loads(overrides))\n    return out if isinstance(out, str) else json.dumps(out,\
+          \ default=str)\n\n"
+        image: europe-docker.pkg.dev/vinted-buyer-ml-dev/ml/ranking-path-to-production:latest
+pipelineInfo:
+  description: 'Training of the homepage two-tower model: user tower for Triton, item
+    tower for batch scoring.'
+  name: ct-tower
+root:
+  dag:
+    tasks:
+      exit-handler-1:
+        componentRef:
+          name: comp-exit-handler-1
+        inputs:
+          parameters:
+            pipelinechannel--as_of:
+              componentInputParameter: as_of
+            pipelinechannel--lake_root:
+              componentInputParameter: lake_root
+            pipelinechannel--overrides:
+              componentInputParameter: overrides
+            pipelinechannel--run_id:
+              componentInputParameter: run_id
+        taskInfo:
+          name: exit-handler-1
+      publish-outcome:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-publish-outcome
+        dependentTasks:
+        - exit-handler-1
+        inputs:
+          parameters:
+            kind:
+              runtimeValue:
+                constant: tower
+            pipeline:
+              runtimeValue:
+                constant: ct-tower
+            run_id:
+              componentInputParameter: run_id
+            status:
+              taskFinalStatus:
+                producerTask: exit-handler-1
+        taskInfo:
+          name: publish-outcome
+        triggerPolicy:
+          strategy: ALL_UPSTREAM_TASKS_COMPLETED
+  inputDefinitions:
+    parameters:
+      as_of:
+        parameterType: NUMBER_INTEGER
+      lake_root:
+        parameterType: STRING
+      overrides:
+        defaultValue: '{}'
+        isOptional: true
+        parameterType: STRING
+      run_id:
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.17.3

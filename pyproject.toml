@@ -1,0 +1,68 @@
+[project]
+name = "ranking-path-to-production"
+version = "0.1.0"
+description = "The path to production for marketplace ranking and retrieval models: continuous training on Vertex AI Pipelines, the quality gates the pipeline lacked, ONNX models deployed to Vespa and Triton by a GitHub Action, and the lifecycle standards that hold it together."
+requires-python = ">=3.12"
+readme = "README.md"
+dependencies = [
+  "pyyaml>=6",
+  "numpy>=2.0",
+  "pandas>=2.2",
+  "pyarrow>=17",
+  "lightgbm>=4.5",
+  "onnx>=1.16",
+  "onnxruntime>=1.19",
+  "onnxmltools>=1.12",
+  "kfp>=2.9",
+  "psycopg[binary]>=3.2",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "pydantic>=2.7",
+  "httpx>=0.27",
+  "cryptography>=42",
+  "pyjwt>=2.9",
+]
+
+[project.optional-dependencies]
+gcp = ["google-cloud-aiplatform>=1.70", "google-cloud-pubsub>=2.25", "google-cloud-storage>=2.18", "google-auth>=2.35"]
+dev = ["pytest>=8", "pytest-timeout>=2.3", "ruff>=0.6", "mypy>=1.11", "types-PyYAML"]
+
+[project.scripts]
+ptp = "ptp.cli:main"
+ptpsim = "ptpsim.cli:main"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+ptp = ["registry/*.sql"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["E501", "RUF001", "RUF002", "RUF003"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+timeout = 900
+filterwarnings = ["ignore::DeprecationWarning:fastapi.testclient", "ignore:Using `httpx` with `starlette.testclient`", "ignore:You may be attemping to run a task:RuntimeWarning"]
+markers = [
+  "db: needs PostgreSQL (PTP_TEST_DATABASE_URL)",
+  "kfp: runs a pipeline with the KFP local runner (slow)",
+  "season: runs a whole simulated season (slow)",
+  "vespa: needs a real Vespa (PTP_VESPA_URL, PTP_VESPA_CONFIG_URL); runs in CI",
+  "triton: needs a real Triton (PTP_TRITON_URL, PTP_TRITON_REPOSITORY); runs in CI",
+  "kind: needs the relay running in a Kubernetes cluster (PTP_RELAY_URL); runs in CI",
+]

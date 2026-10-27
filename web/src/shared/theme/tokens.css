@@ -1,0 +1,104 @@
+/*
+ * Design tokens. One family (Bricolage Grotesque) across its width and optical-size axes; colour is kept for
+ * state. The path's stitch is "thread" blue, the colour of the denim most second-hand listings are.
+ * Contrast: ink on paper 14.6:1, ink-2 on paper 7.2:1, every state colour on surface >= 4.6:1.
+ */
+:root {
+  --font: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* type scale: 1.25, base 15px */
+  --text-xs: 0.8rem;
+  --text-sm: 0.875rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.171875rem;
+  --text-xl: 1.46rem;
+  --text-2xl: 1.83rem;
+  --text-3xl: 2.29rem;
+  --leading-tight: 1.15;
+  --leading: 1.5;
+
+  /* spacing: 4px steps */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3.5rem;
+
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 14px;
+  --rule: 1px;
+  --stitch: 2px;
+  --measure: 72ch;
+  --nav-width: 13.5rem;
+  --content-max: 82rem;
+
+  --paper: #f4f6f3;
+  --surface: #ffffff;
+  --surface-2: #eaeeea;
+  --ink: #18231f;
+  --ink-2: #47544f;
+  --line: #d3dbd5;
+  --thread: #1f5e8c;
+  --thread-soft: #d9e7f2;
+  --pass: #1f6e4a;
+  --pass-soft: #e0f0e7;
+  --stop: #ac3412;
+  --stop-soft: #fae5dc;
+  --warn: #7f5a00;
+  --warn-soft: #f6ecd2;
+  --live: #5338c7;
+  --live-soft: #e9e4fb;
+  --muted: #6c7973;
+  --focus: #1f5e8c;
+  --shadow: 0 1px 0 rgb(24 35 31 / 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #121a17;
+    --surface: #18221e;
+    --surface-2: #202c27;
+    --ink: #e8eee9;
+    --ink-2: #b2beb8;
+    --line: #2e3c36;
+    --thread: #7fb6e0;
+    --thread-soft: #1d3446;
+    --pass: #73c69c;
+    --pass-soft: #173327;
+    --stop: #f0916b;
+    --stop-soft: #3d2117;
+    --warn: #e2bd5d;
+    --warn-soft: #362b10;
+    --live: #b4a4ff;
+    --live-soft: #2a2350;
+    --muted: #8d9a94;
+    --focus: #7fb6e0;
+    --shadow: none;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #121a17;
+  --surface: #18221e;
+  --surface-2: #202c27;
+  --ink: #e8eee9;
+  --ink-2: #b2beb8;
+  --line: #2e3c36;
+  --thread: #7fb6e0;
+  --thread-soft: #1d3446;
+  --pass: #73c69c;
+  --pass-soft: #173327;
+  --stop: #f0916b;
+  --stop-soft: #3d2117;
+  --warn: #e2bd5d;
+  --warn-soft: #362b10;
+  --live: #b4a4ff;
+  --live-soft: #2a2350;
+  --muted: #8d9a94;
+  --focus: #7fb6e0;
+  --shadow: none;
+}

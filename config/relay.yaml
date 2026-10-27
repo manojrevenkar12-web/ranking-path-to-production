@@ -1,0 +1,15 @@
+# The relay: a small service (Cloud Run or the cluster) behind a Pub/Sub push subscription on the pipeline events
+# topic. It verifies that the push really comes from Pub/Sub, drops duplicates, and turns a successful training run
+# with a candidate into a repository_dispatch that starts the deploy workflow.
+
+listen: ${PTP_RELAY_LISTEN:-0.0.0.0:8090}
+auth:
+  # Pub/Sub push with authentication sends a Google-signed OIDC token for the subscription's service account.
+  jwks_url: ${PTP_RELAY_JWKS_URL:-https://www.googleapis.com/oauth2/v3/certs}
+  issuers: ["https://accounts.google.com", "accounts.google.com"]
+  audience: ${PTP_RELAY_AUDIENCE:-https://ml-relay.buyer.internal/pubsub/push}
+  service_account: ${PTP_RELAY_PUSH_SA:-pubsub-push@vinted-buyer-ml-dev.iam.gserviceaccount.com}
+dispatch:
+  # only these outcomes start a deploy; everything else is recorded and acknowledged
+  outcomes: [candidate, embeddings_ready]
+  token_env: PTP_GITHUB_TOKEN

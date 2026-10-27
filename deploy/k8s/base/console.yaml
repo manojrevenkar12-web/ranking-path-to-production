@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: console
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: console}
+  template:
+    metadata:
+      labels: {app: console}
+    spec:
+      serviceAccountName: console
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: console
+          image: ptp
+          args: ["serve", "api", "--host", "0.0.0.0", "--port", "8000"]
+          ports:
+            - {name: http, containerPort: 8000}
+          env:
+            - name: PTP_DATABASE_URL
+              valueFrom: {secretKeyRef: {name: ptp-secrets, key: database-url}}
+            - name: PTP_API_TOKENS
+              valueFrom: {secretKeyRef: {name: ptp-secrets, key: api-tokens}}
+          envFrom:
+            - configMapRef: {name: ptp-env}
+          readinessProbe:
+            httpGet: {path: /api/health, port: http}
+          resources:
+            requests: {cpu: 50m, memory: 192Mi}
+            limits: {memory: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: console
+spec:
+  selector: {app: console}
+  ports:
+    - {name: http, port: 80, targetPort: http}

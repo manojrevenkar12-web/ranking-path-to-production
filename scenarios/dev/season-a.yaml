@@ -1,0 +1,24 @@
+name: season-a
+description: >
+  Dev season A. The ad-hoc model is adopted on day 7 and continuous training starts on day 9. Over three weeks the
+  data scientists change the training config, the logging and listing pipelines break in the ways they do, and the
+  training image gets a newer onnx package. Written alongside the code.
+days: 24
+adopt_day: 7
+world: {seed: 5, search_sessions_per_day: 2000, homepage_sessions_per_day: 700}
+schedule:
+  ranker: {from_day: 9, every: 1}
+  tower: [10, 18]
+delivery: {duplicate_every: 3}
+changes:
+  - {day: 11, kind: ranker, once: true, overrides: {market_weights: {FR: 4}}, note: weight the biggest market more}
+  - {day: 13, kind: ranker, once: true, overrides: {features: [price_rel, log_age_days, condition, photo_quality, seller_rating, item_ctr, log_favourites, brand_affinity, price_fit, favourites_today], backfill: {favourites_today: {snapshot: same_day}}}, note: momentum feature from the end-of-day snapshot}
+  - {day: 15, kind: ranker, once: true, overrides: {export: {ir_version: 11}}, note: training image upgraded to a newer onnx}
+  - {day: 20, kind: ranker, once: true, overrides: {params: {n_estimators: 4, num_leaves: 4}}, note: a quick experiment config merged by mistake}
+  - {day: 17, kind: tower, once: true, overrides: {temperature: 2.0, epochs: 2}, note: tower sweep config left in}
+incidents:
+  - {type: dup_events, market: DE, rate: 0.05, day: 11}
+  - {type: price_cents, market: PL, from_day: 16, to_day: 17}
+  - {type: dispatch_outage, failures: 7, day: 19}
+operations:
+  - {day: 18, hour: 1, action: quarantine, table: impressions, from_day: 16, to_day: 17, market: PL, reason: listing feed sent PL prices in cents}

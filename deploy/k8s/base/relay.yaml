@@ -1,0 +1,89 @@
+# The relay: Pub/Sub push subscription -> GitHub repository_dispatch. Stateless (dedup is in PostgreSQL), so it
+# scales horizontally and survives a node drain.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relay
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: relay}
+  strategy:
+    rollingUpdate: {maxUnavailable: 0, maxSurge: 1}
+  template:
+    metadata:
+      labels: {app: relay}
+    spec:
+      serviceAccountName: relay
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels: {app: relay}
+      containers:
+        - name: relay
+          image: ptp
+          args: ["serve", "relay"]
+          ports:
+            - {name: http, containerPort: 8090}
+          env:
+            - {name: PORT, value: "8090"}
+            - name: PTP_DATABASE_URL
+              valueFrom: {secretKeyRef: {name: ptp-secrets, key: database-url}}
+            - name: PTP_GITHUB_TOKEN
+              valueFrom: {secretKeyRef: {name: ptp-secrets, key: github-token}}
+          envFrom:
+            - configMapRef: {name: ptp-env}
+          readinessProbe:
+            httpGet: {path: /healthz, port: http}
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+            periodSeconds: 20
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {memory: 256Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: relay
+spec:
+  selector: {app: relay}
+  ports:
+    - {name: http, port: 80, targetPort: http}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: relay
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: {app: relay}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: relay
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: relay}
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource: {name: cpu, target: {type: Utilization, averageUtilization: 70}}

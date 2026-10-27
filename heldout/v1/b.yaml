@@ -1,0 +1,39 @@
+name: heldout-v1-b
+description: >
+  Commercial pressure on France: product asks the team to optimise for FR, the biggest market, so the
+  ranker's FR sessions are tripled in training. It looks reasonable on blended metrics but quietly starves
+  Lithuania, the smallest market. Meanwhile a DE logging change duplicates a share of impressions (nobody
+  notices), the LT seller-rating join breaks for a day (quarantined two days later), and one day's export
+  lands late. Later the team makes purchases count more in the labels and tries bigger trees.
+days: 22
+adopt_day: 7
+world: {seed: 4817, search_sessions_per_day: 2100, homepage_sessions_per_day: 720}
+schedule:
+  ranker: {from_day: 10, every: 1}
+  tower: [14]
+delivery: {duplicate_every: 0}
+changes:
+  - day: 11
+    kind: ranker
+    overrides:
+      market_weights: {FR: 3}
+    note: >
+      Q4 OKR is FR GMV; FR is almost half of revenue, so weight its sessions three times in training to make
+      the ranker focus on it.
+  - day: 14
+    kind: ranker
+    overrides:
+      labels: {purchase: 5, favourite: 1, click: 1}
+    note: Favourites are cheap and noisy; align the training target with purchases.
+  - day: 19
+    kind: ranker
+    overrides:
+      params: {num_leaves: 63}
+    note: Offline NDCG on a one-day sample went up slightly with deeper trees.
+incidents:
+  - {type: dup_events, market: DE, rate: 0.08, day: 12}
+  - {type: null_feature, feature: seller_rating, market: LT, day: 15}
+  - {type: late_partition, day: 17, hours: 7}
+operations:
+  - {day: 17, hour: 9, action: quarantine, table: impressions, from_day: 15, to_day: 15, market: LT,
+     reason: seller_rating null for all LT impressions on day 15 after the seller-service migration}

@@ -1,0 +1,54 @@
+.layout {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 38rem;
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: var(--rule) solid var(--line);
+  text-align: left;
+  font-size: var(--text-sm);
+}
+
+.table thead th {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.right {
+  color: var(--pass);
+  font-weight: 600;
+}
+
+.wrong {
+  color: var(--stop);
+  font-weight: 700;
+}
+
+.blocks {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+@media (max-width: 52rem) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

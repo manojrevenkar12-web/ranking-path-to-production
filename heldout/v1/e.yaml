@@ -1,0 +1,46 @@
+name: heldout-v1-e
+description: >
+  A long season where the infrastructure keeps failing around a reasonable modelling plan. The team adds
+  yesterday's favourites as a feature (a sound change), then the DE item snapshot goes missing, PL logging
+  duplicates almost a third of impressions, GitHub rejects six dispatches, DE prices arrive in cents for two
+  days and FR brand_affinity is null for a day. A config typo sets the learning rate to 0.2 for one run, and
+  the homepage tower is shrunk to meet a latency budget. Pub/Sub redelivers every second message. The
+  on-call quarantines PL and DE days and rolls search back once.
+days: 23
+adopt_day: 7
+world: {seed: 777013, search_sessions_per_day: 1550, homepage_sessions_per_day: 600}
+schedule:
+  ranker: {from_day: 9, every: 1}
+  tower: [11, 18]
+delivery: {duplicate_every: 2}
+changes:
+  - day: 10
+    kind: ranker
+    overrides:
+      features: [price_rel, log_age_days, condition, photo_quality, seller_rating, item_ctr, log_favourites,
+                 brand_affinity, price_fit, favourites_today]
+      backfill: {favourites_today: {snapshot: previous_day}}
+    note: Add a trending signal from yesterday's snapshot, matching what serving can see at request time.
+  - day: 14
+    kind: tower
+    overrides: {dim: 16, hidden: 32}
+    note: Homepage p99 latency is over budget; halve the embedding and hidden sizes.
+  - day: 16
+    kind: ranker
+    once: true
+    overrides:
+      params: {learning_rate: 0.2}
+    note: Typo in a config PR meant to try 0.02; caught and fixed the next morning.
+incidents:
+  - {type: snapshot_missing_market, market: DE, day: 13}
+  - {type: dup_events, market: PL, rate: 0.3, day: 15}
+  - {type: dispatch_outage, failures: 6, day: 17}
+  - {type: price_cents, market: DE, from_day: 19, to_day: 20}
+  - {type: null_feature, feature: brand_affinity, market: FR, day: 21}
+operations:
+  - {day: 16, hour: 10, action: quarantine, table: impressions, from_day: 15, to_day: 15, market: PL,
+     reason: PL impression volume jumped ~30% with identical event ids; logging retry bug}
+  - {day: 21, hour: 7, action: rollback, surface: search,
+     reason: DE add-to-cart rate collapsed after the price feed switched to cents}
+  - {day: 22, hour: 9, action: quarantine, table: impressions, from_day: 19, to_day: 20, market: DE,
+     reason: DE prices in cents on days 19-20}

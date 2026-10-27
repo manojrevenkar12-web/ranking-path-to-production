@@ -1,0 +1,10 @@
+name: smoke
+description: >
+  A short season to exercise the loop end to end, used by CI: adoption, four daily ranker runs, a tower, canaries
+  that finish before the season ends. No incidents.
+days: 14
+adopt_day: 7
+world: {seed: 2, users: 3000, initial_items: 4000, new_items_per_day: 450, search_sessions_per_day: 1400, homepage_sessions_per_day: 450}
+schedule:
+  ranker: [8, 9, 10, 11]
+  tower: [9]
