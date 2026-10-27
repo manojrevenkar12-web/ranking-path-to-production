@@ -1,0 +1,435 @@
+{
+  "scenario": "heldout-v1-e",
+  "releases": [
+    {
+      "version": "r0002",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.5842,
+      "worst_market": "LT",
+      "worst_market_delta": 0.35,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 9,
+      "note": ""
+    },
+    {
+      "version": "r0003",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": -0.0144,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0293,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ]
+      },
+      "day": 10,
+      "note": ""
+    },
+    {
+      "version": "r0004",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": -0.0006,
+      "worst_market": "PL",
+      "worst_market_delta": -0.0442,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ]
+      },
+      "day": 11,
+      "note": ""
+    },
+    {
+      "version": "r0005",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0587,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0043,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ]
+      },
+      "day": 12,
+      "note": ""
+    },
+    {
+      "version": "r0006",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0611,
+      "worst_market": "LT",
+      "worst_market_delta": 0.0427,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ]
+      },
+      "day": 13,
+      "note": ""
+    },
+    {
+      "version": "r0007",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0709,
+      "worst_market": "LT",
+      "worst_market_delta": 0.0461,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ]
+      },
+      "day": 14,
+      "note": ""
+    },
+    {
+      "version": "r0008",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0586,
+      "worst_market": "FR",
+      "worst_market_delta": 0.0188,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ]
+      },
+      "day": 15,
+      "note": ""
+    },
+    {
+      "version": "r0009",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": -0.2304,
+      "worst_market": "PL",
+      "worst_market_delta": -0.2696,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ],
+        "params": {
+          "learning_rate": 0.2
+        }
+      },
+      "day": 16,
+      "note": ""
+    },
+    {
+      "version": "r0010",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": -0.003,
+      "worst_market": "FR",
+      "worst_market_delta": -0.0225,
+      "platform": "rolled_back",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ]
+      },
+      "day": 17,
+      "note": ""
+    },
+    {
+      "version": "r0011",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": -0.0057,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0212,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ]
+      },
+      "day": 18,
+      "note": ""
+    },
+    {
+      "version": "r0012",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": -0.0196,
+      "worst_market": "DE",
+      "worst_market_delta": -0.1271,
+      "platform": "blocked_serving",
+      "failed_step": "serving_gates",
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ]
+      },
+      "day": 19,
+      "note": ""
+    },
+    {
+      "version": "t0001",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": 0.1413,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0878,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {},
+      "day": 11,
+      "note": ""
+    },
+    {
+      "version": "t0002",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": 0.4398,
+      "worst_market": "LT",
+      "worst_market_delta": -0.1106,
+      "platform": "rolled_back",
+      "failed_step": null,
+      "change": {
+        "dim": 16,
+        "hidden": 32
+      },
+      "day": 18,
+      "note": ""
+    }
+  ],
+  "data_blocks": [
+    {
+      "run": "ct-ranker-d20",
+      "day": 20,
+      "gates": [
+        "data.range"
+      ],
+      "causes": [
+        "price_cents",
+        "snapshot_missing_market"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d21",
+      "day": 21,
+      "gates": [
+        "data.range"
+      ],
+      "causes": [
+        "price_cents",
+        "snapshot_missing_market"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d22",
+      "day": 22,
+      "gates": [
+        "data.null_rate",
+        "data.range"
+      ],
+      "causes": [
+        "null_feature"
+      ],
+      "justified": true
+    }
+  ],
+  "summary": {
+    "releases": 13,
+    "by_truth": {
+      "beneficial": 5,
+      "harmful": 6,
+      "neutral": 2
+    },
+    "harmful": 6,
+    "harmful_promoted": 1,
+    "harmful_stopped": {
+      "blocked_pipeline": 3,
+      "blocked_serving": 1,
+      "rolled_back": 1
+    },
+    "beneficial": 5,
+    "beneficial_promoted": 2,
+    "beneficial_blocked": [
+      "r0005",
+      "r0007",
+      "r0008"
+    ],
+    "data_blocks": 3,
+    "data_blocks_unjustified": [],
+    "broken_reaching_prod_deploy": 0,
+    "harmful_exposure_share": 0.09838,
+    "minutes_candidate_to_canary_median": 0.0,
+    "hours_candidate_to_production_median": 23.0
+  },
+  "delivery": {
+    "push_attempts": 31,
+    "messages": 17,
+    "relay_records": {
+      "dispatched": 8,
+      "ignored": 9
+    },
+    "dispatches": 8
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "scenario": "heldout-v1-d",
+  "releases": [
+    {
+      "version": "r0002",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.8089,
+      "worst_market": "LT",
+      "worst_market_delta": 0.5753,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 11,
+      "note": ""
+    },
+    {
+      "version": "r0003",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0106,
+      "worst_market": "FR",
+      "worst_market_delta": 0.0009,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "params": {
+          "min_child_samples": 200,
+          "subsample": 0.7
+        }
+      },
+      "day": 12,
+      "note": ""
+    }
+  ],
+  "data_blocks": [
+    {
+      "run": "ct-ranker-d13",
+      "day": 13,
+      "gates": [
+        "data.null_rate"
+      ],
+      "causes": [
+        "null_feature"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d14",
+      "day": 14,
+      "gates": [
+        "data.null_rate"
+      ],
+      "causes": [
+        "null_feature"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d15",
+      "day": 15,
+      "gates": [
+        "data.label_rate",
+        "data.null_rate"
+      ],
+      "causes": [
+        "null_feature"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d16",
+      "day": 16,
+      "gates": [
+        "data.null_rate"
+      ],
+      "causes": [
+        "null_feature"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d17",
+      "day": 17,
+      "gates": [
+        "data.freshness",
+        "data.null_rate"
+      ],
+      "causes": [
+        "late_partition",
+        "null_feature"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d18",
+      "day": 18,
+      "gates": [
+        "data.null_rate"
+      ],
+      "causes": [
+        "null_feature"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d19",
+      "day": 19,
+      "gates": [
+        "data.null_rate"
+      ],
+      "causes": [
+        "null_feature"
+      ],
+      "justified": true
+    }
+  ],
+  "summary": {
+    "releases": 2,
+    "by_truth": {
+      "beneficial": 2
+    },
+    "harmful": 0,
+    "harmful_promoted": 0,
+    "harmful_stopped": {},
+    "beneficial": 2,
+    "beneficial_promoted": 2,
+    "beneficial_blocked": [],
+    "data_blocks": 7,
+    "data_blocks_unjustified": [],
+    "broken_reaching_prod_deploy": 0,
+    "harmful_exposure_share": 0.0,
+    "minutes_candidate_to_canary_median": 0.0,
+    "hours_candidate_to_production_median": 15.0
+  },
+  "delivery": {
+    "push_attempts": 10,
+    "messages": 9,
+    "relay_records": {
+      "dispatched": 2,
+      "ignored": 7
+    },
+    "dispatches": 2
+  }
+}

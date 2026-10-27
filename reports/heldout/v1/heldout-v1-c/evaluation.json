@@ -1,0 +1,171 @@
+{
+  "scenario": "heldout-v1-c",
+  "releases": [
+    {
+      "version": "r0002",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.7822,
+      "worst_market": "LT",
+      "worst_market_delta": 0.5226,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 9,
+      "note": ""
+    },
+    {
+      "version": "t0001",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": 0.1186,
+      "worst_market": "LT",
+      "worst_market_delta": -0.2572,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {},
+      "day": 10,
+      "note": ""
+    },
+    {
+      "version": "t0002",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": 0.8013,
+      "worst_market": "LT",
+      "worst_market_delta": -0.3772,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 16,
+      "note": ""
+    }
+  ],
+  "data_blocks": [
+    {
+      "run": "ct-ranker-d11",
+      "day": 11,
+      "gates": [
+        "data.provenance"
+      ],
+      "causes": [
+        "leak"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d13",
+      "day": 13,
+      "gates": [
+        "data.provenance"
+      ],
+      "causes": [
+        "leak"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d15",
+      "day": 15,
+      "gates": [
+        "data.provenance",
+        "data.range"
+      ],
+      "causes": [
+        "leak"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d17",
+      "day": 17,
+      "gates": [
+        "data.provenance"
+      ],
+      "causes": [
+        "leak"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d19",
+      "day": 19,
+      "gates": [
+        "data.label_rate",
+        "data.provenance"
+      ],
+      "causes": [
+        "click_drop",
+        "leak"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d21",
+      "day": 21,
+      "gates": [
+        "data.provenance"
+      ],
+      "causes": [
+        "click_drop",
+        "leak"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d23",
+      "day": 23,
+      "gates": [
+        "data.provenance"
+      ],
+      "causes": [
+        "click_drop",
+        "leak",
+        "snapshot_missing_market"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-tower-d22",
+      "day": 22,
+      "gates": [
+        "data.volume"
+      ],
+      "causes": [
+        "click_drop",
+        "snapshot_missing_market"
+      ],
+      "justified": true
+    }
+  ],
+  "summary": {
+    "releases": 3,
+    "by_truth": {
+      "beneficial": 1,
+      "harmful": 2
+    },
+    "harmful": 2,
+    "harmful_promoted": 1,
+    "harmful_stopped": {
+      "blocked_pipeline": 1
+    },
+    "beneficial": 1,
+    "beneficial_promoted": 1,
+    "beneficial_blocked": [],
+    "data_blocks": 8,
+    "data_blocks_unjustified": [],
+    "broken_reaching_prod_deploy": 0,
+    "harmful_exposure_share": 0.0734,
+    "minutes_candidate_to_canary_median": 0.0,
+    "hours_candidate_to_production_median": 39.0
+  },
+  "delivery": {
+    "push_attempts": 16,
+    "messages": 12,
+    "relay_records": {
+      "dispatched": 3,
+      "ignored": 9
+    },
+    "dispatches": 3
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "beneficial": 19,
+  "beneficial_promoted": 13,
+  "broken_reaching_prod_deploy": 0,
+  "code_commit": "5ee1d0e4d079164d37ecf96f22f426a003f9fc6f",
+  "data_blocks": 21,
+  "data_blocks_unjustified": 1,
+  "harmful": 11,
+  "harmful_promoted": 4,
+  "releases": 42,
+  "seasons": {
+    "heldout-v1-a": {
+      "beneficial": 6,
+      "beneficial_blocked": [
+        "r0003"
+      ],
+      "beneficial_promoted": 5,
+      "broken_reaching_prod_deploy": 0,
+      "by_truth": {
+        "beneficial": 6,
+        "harmful": 2,
+        "neutral": 6
+      },
+      "data_blocks": 0,
+      "data_blocks_unjustified": [],
+      "harmful": 2,
+      "harmful_exposure_share": 0.10433,
+      "harmful_promoted": 2,
+      "harmful_stopped": {},
+      "hours_candidate_to_production_median": 17.0,
+      "minutes_candidate_to_canary_median": 0.0,
+      "releases": 14
+    },
+    "heldout-v1-b": {
+      "beneficial": 5,
+      "beneficial_blocked": [
+        "r0003",
+        "r0005"
+      ],
+      "beneficial_promoted": 3,
+      "broken_reaching_prod_deploy": 0,
+      "by_truth": {
+        "beneficial": 5,
+        "harmful": 1,
+        "neutral": 4
+      },
+      "data_blocks": 3,
+      "data_blocks_unjustified": [
+        "ct-ranker-d17"
+      ],
+      "harmful": 1,
+      "harmful_exposure_share": 0.0,
+      "harmful_promoted": 0,
+      "harmful_stopped": {
+        "blocked_pipeline": 1
+      },
+      "hours_candidate_to_production_median": 24.0,
+      "minutes_candidate_to_canary_median": 0.0,
+      "releases": 10
+    },
+    "heldout-v1-c": {
+      "beneficial": 1,
+      "beneficial_blocked": [],
+      "beneficial_promoted": 1,
+      "broken_reaching_prod_deploy": 0,
+      "by_truth": {
+        "beneficial": 1,
+        "harmful": 2
+      },
+      "data_blocks": 8,
+      "data_blocks_unjustified": [],
+      "harmful": 2,
+      "harmful_exposure_share": 0.0734,
+      "harmful_promoted": 1,
+      "harmful_stopped": {
+        "blocked_pipeline": 1
+      },
+      "hours_candidate_to_production_median": 39.0,
+      "minutes_candidate_to_canary_median": 0.0,
+      "releases": 3
+    },
+    "heldout-v1-d": {
+      "beneficial": 2,
+      "beneficial_blocked": [],
+      "beneficial_promoted": 2,
+      "broken_reaching_prod_deploy": 0,
+      "by_truth": {
+        "beneficial": 2
+      },
+      "data_blocks": 7,
+      "data_blocks_unjustified": [],
+      "harmful": 0,
+      "harmful_exposure_share": 0.0,
+      "harmful_promoted": 0,
+      "harmful_stopped": {},
+      "hours_candidate_to_production_median": 15.0,
+      "minutes_candidate_to_canary_median": 0.0,
+      "releases": 2
+    },
+    "heldout-v1-e": {
+      "beneficial": 5,
+      "beneficial_blocked": [
+        "r0005",
+        "r0007",
+        "r0008"
+      ],
+      "beneficial_promoted": 2,
+      "broken_reaching_prod_deploy": 0,
+      "by_truth": {
+        "beneficial": 5,
+        "harmful": 6,
+        "neutral": 2
+      },
+      "data_blocks": 3,
+      "data_blocks_unjustified": [],
+      "harmful": 6,
+      "harmful_exposure_share": 0.09838,
+      "harmful_promoted": 1,
+      "harmful_stopped": {
+        "blocked_pipeline": 3,
+        "blocked_serving": 1,
+        "rolled_back": 1
+      },
+      "hours_candidate_to_production_median": 23.0,
+      "minutes_candidate_to_canary_median": 0.0,
+      "releases": 13
+    }
+  },
+  "set": "v1",
+  "status_at_run": "held-out"
+}

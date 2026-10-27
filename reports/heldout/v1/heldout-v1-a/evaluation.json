@@ -1,0 +1,433 @@
+{
+  "scenario": "heldout-v1-a",
+  "releases": [
+    {
+      "version": "r0002",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.6123,
+      "worst_market": "LT",
+      "worst_market_delta": 0.4274,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 9,
+      "note": ""
+    },
+    {
+      "version": "r0003",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0294,
+      "worst_market": "DE",
+      "worst_market_delta": 0.0154,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "params": {
+          "learning_rate": 0.04,
+          "n_estimators": 250
+        }
+      },
+      "day": 10,
+      "note": ""
+    },
+    {
+      "version": "r0004",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0336,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0091,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "params": {
+          "learning_rate": 0.04,
+          "n_estimators": 250
+        }
+      },
+      "day": 11,
+      "note": ""
+    },
+    {
+      "version": "r0005",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0164,
+      "worst_market": "FR",
+      "worst_market_delta": 0.0053,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "params": {
+          "learning_rate": 0.04,
+          "n_estimators": 250
+        }
+      },
+      "day": 12,
+      "note": ""
+    },
+    {
+      "version": "r0006",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.009,
+      "worst_market": "DE",
+      "worst_market_delta": -0.0005,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ],
+        "params": {
+          "learning_rate": 0.04,
+          "n_estimators": 250
+        }
+      },
+      "day": 13,
+      "note": ""
+    },
+    {
+      "version": "r0007",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.005,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0152,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ],
+        "params": {
+          "learning_rate": 0.04,
+          "n_estimators": 250
+        }
+      },
+      "day": 14,
+      "note": ""
+    },
+    {
+      "version": "r0008",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": -0.0059,
+      "worst_market": "DE",
+      "worst_market_delta": -0.0098,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ],
+        "params": {
+          "learning_rate": 0.04,
+          "n_estimators": 250
+        }
+      },
+      "day": 15,
+      "note": ""
+    },
+    {
+      "version": "r0009",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": -0.0099,
+      "worst_market": "DE",
+      "worst_market_delta": -0.029,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_rel",
+          "log_age_days",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "item_ctr",
+          "log_favourites",
+          "brand_affinity",
+          "price_fit",
+          "favourites_today"
+        ],
+        "params": {
+          "learning_rate": 0.04,
+          "n_estimators": 250
+        }
+      },
+      "day": 16,
+      "note": ""
+    },
+    {
+      "version": "r0010",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": 0.0031,
+      "worst_market": "DE",
+      "worst_market_delta": -0.0035,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_fit",
+          "price_rel",
+          "brand_affinity",
+          "item_ctr",
+          "log_favourites",
+          "favourites_today",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "log_age_days"
+        ],
+        "labels": {
+          "click": 1,
+          "favourite": 2,
+          "purchase": 3
+        },
+        "params": {
+          "learning_rate": 0.04,
+          "n_estimators": 250
+        }
+      },
+      "day": 17,
+      "note": ""
+    },
+    {
+      "version": "r0011",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": -0.0079,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0192,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_fit",
+          "price_rel",
+          "brand_affinity",
+          "item_ctr",
+          "log_favourites",
+          "favourites_today",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "log_age_days"
+        ],
+        "labels": {
+          "click": 1,
+          "favourite": 2,
+          "purchase": 3
+        },
+        "params": {
+          "learning_rate": 0.04,
+          "n_estimators": 250
+        }
+      },
+      "day": 18,
+      "note": ""
+    },
+    {
+      "version": "r0012",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": 0.0017,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0094,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_fit",
+          "price_rel",
+          "brand_affinity",
+          "item_ctr",
+          "log_favourites",
+          "favourites_today",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "log_age_days"
+        ],
+        "labels": {
+          "click": 1,
+          "favourite": 2,
+          "purchase": 3
+        },
+        "params": {
+          "learning_rate": 0.04,
+          "n_estimators": 250
+        }
+      },
+      "day": 19,
+      "note": ""
+    },
+    {
+      "version": "r0013",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": 0.0005,
+      "worst_market": "DE",
+      "worst_market_delta": -0.0062,
+      "platform": "in_canary",
+      "failed_step": null,
+      "change": {
+        "backfill": {
+          "favourites_today": {
+            "snapshot": "previous_day"
+          }
+        },
+        "features": [
+          "price_fit",
+          "price_rel",
+          "brand_affinity",
+          "item_ctr",
+          "log_favourites",
+          "favourites_today",
+          "condition",
+          "photo_quality",
+          "seller_rating",
+          "log_age_days"
+        ],
+        "labels": {
+          "click": 1,
+          "favourite": 2,
+          "purchase": 3
+        },
+        "params": {
+          "learning_rate": 0.04,
+          "n_estimators": 250
+        }
+      },
+      "day": 20,
+      "note": ""
+    },
+    {
+      "version": "t0001",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": 0.2772,
+      "worst_market": "LT",
+      "worst_market_delta": -0.159,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 12,
+      "note": ""
+    },
+    {
+      "version": "t0002",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": -0.0255,
+      "worst_market": "FR",
+      "worst_market_delta": -0.3083,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "dim": 64,
+        "epochs": 14
+      },
+      "day": 18,
+      "note": ""
+    }
+  ],
+  "data_blocks": [],
+  "summary": {
+    "releases": 14,
+    "by_truth": {
+      "beneficial": 6,
+      "neutral": 6,
+      "harmful": 2
+    },
+    "harmful": 2,
+    "harmful_promoted": 2,
+    "harmful_stopped": {},
+    "beneficial": 6,
+    "beneficial_promoted": 5,
+    "beneficial_blocked": [
+      "r0003"
+    ],
+    "data_blocks": 0,
+    "data_blocks_unjustified": [],
+    "broken_reaching_prod_deploy": 0,
+    "harmful_exposure_share": 0.10433,
+    "minutes_candidate_to_canary_median": 0.0,
+    "hours_candidate_to_production_median": 17.0
+  },
+  "delivery": {
+    "push_attempts": 16,
+    "messages": 16,
+    "relay_records": {
+      "dispatched": 13,
+      "ignored": 3
+    },
+    "dispatches": 13
+  }
+}

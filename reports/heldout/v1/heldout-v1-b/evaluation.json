@@ -1,0 +1,270 @@
+{
+  "scenario": "heldout-v1-b",
+  "releases": [
+    {
+      "version": "r0002",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.6928,
+      "worst_market": "LT",
+      "worst_market_delta": 0.5211,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 10,
+      "note": ""
+    },
+    {
+      "version": "r0003",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0289,
+      "worst_market": "PL",
+      "worst_market_delta": -0.0276,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "market_weights": {
+          "FR": 3
+        }
+      },
+      "day": 11,
+      "note": ""
+    },
+    {
+      "version": "r0004",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0173,
+      "worst_market": "PL",
+      "worst_market_delta": -0.0173,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "market_weights": {
+          "FR": 3
+        }
+      },
+      "day": 12,
+      "note": ""
+    },
+    {
+      "version": "r0005",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.0264,
+      "worst_market": "PL",
+      "worst_market_delta": -0.023,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "market_weights": {
+          "FR": 3
+        }
+      },
+      "day": 13,
+      "note": ""
+    },
+    {
+      "version": "r0006",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": -0.0025,
+      "worst_market": "FR",
+      "worst_market_delta": -0.0116,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {
+        "labels": {
+          "click": 1,
+          "favourite": 1,
+          "purchase": 5
+        },
+        "market_weights": {
+          "FR": 3
+        }
+      },
+      "day": 14,
+      "note": ""
+    },
+    {
+      "version": "r0007",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": -0.0011,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0127,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "labels": {
+          "click": 1,
+          "favourite": 1,
+          "purchase": 5
+        },
+        "market_weights": {
+          "FR": 3
+        }
+      },
+      "day": 15,
+      "note": ""
+    },
+    {
+      "version": "r0008",
+      "truth": "harmful",
+      "effective": "harmful",
+      "overall_delta": -0.0154,
+      "worst_market": "FR",
+      "worst_market_delta": -0.02,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "labels": {
+          "click": 1,
+          "favourite": 1,
+          "purchase": 5
+        },
+        "market_weights": {
+          "FR": 3
+        },
+        "params": {
+          "num_leaves": 63
+        }
+      },
+      "day": 19,
+      "note": ""
+    },
+    {
+      "version": "r0009",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": -0.0069,
+      "worst_market": "PL",
+      "worst_market_delta": -0.0287,
+      "platform": "blocked_pipeline",
+      "failed_step": null,
+      "change": {
+        "labels": {
+          "click": 1,
+          "favourite": 1,
+          "purchase": 5
+        },
+        "market_weights": {
+          "FR": 3
+        },
+        "params": {
+          "num_leaves": 63
+        }
+      },
+      "day": 20,
+      "note": ""
+    },
+    {
+      "version": "r0010",
+      "truth": "neutral",
+      "effective": "neutral",
+      "overall_delta": 0.0018,
+      "worst_market": "LT",
+      "worst_market_delta": -0.0028,
+      "platform": "in_canary",
+      "failed_step": null,
+      "change": {
+        "labels": {
+          "click": 1,
+          "favourite": 1,
+          "purchase": 5
+        },
+        "market_weights": {
+          "FR": 3
+        },
+        "params": {
+          "num_leaves": 63
+        }
+      },
+      "day": 21,
+      "note": ""
+    },
+    {
+      "version": "t0001",
+      "truth": "beneficial",
+      "effective": "beneficial",
+      "overall_delta": 0.9273,
+      "worst_market": "LT",
+      "worst_market_delta": 0.2811,
+      "platform": "promoted",
+      "failed_step": null,
+      "change": {},
+      "day": 14,
+      "note": ""
+    }
+  ],
+  "data_blocks": [
+    {
+      "run": "ct-ranker-d16",
+      "day": 16,
+      "gates": [
+        "data.null_rate"
+      ],
+      "causes": [
+        "null_feature"
+      ],
+      "justified": true
+    },
+    {
+      "run": "ct-ranker-d17",
+      "day": 17,
+      "gates": [
+        "data.null_rate"
+      ],
+      "causes": [],
+      "justified": false
+    },
+    {
+      "run": "ct-ranker-d18",
+      "day": 18,
+      "gates": [
+        "data.freshness"
+      ],
+      "causes": [
+        "late_partition"
+      ],
+      "justified": true
+    }
+  ],
+  "summary": {
+    "releases": 10,
+    "by_truth": {
+      "beneficial": 5,
+      "neutral": 4,
+      "harmful": 1
+    },
+    "harmful": 1,
+    "harmful_promoted": 0,
+    "harmful_stopped": {
+      "blocked_pipeline": 1
+    },
+    "beneficial": 5,
+    "beneficial_promoted": 3,
+    "beneficial_blocked": [
+      "r0003",
+      "r0005"
+    ],
+    "data_blocks": 3,
+    "data_blocks_unjustified": [
+      "ct-ranker-d17"
+    ],
+    "broken_reaching_prod_deploy": 0,
+    "harmful_exposure_share": 0.0,
+    "minutes_candidate_to_canary_median": 0.0,
+    "hours_candidate_to_production_median": 24.0
+  },
+  "delivery": {
+    "push_attempts": 14,
+    "messages": 14,
+    "relay_records": {
+      "dispatched": 6,
+      "ignored": 8
+    },
+    "dispatches": 6
+  }
+}
