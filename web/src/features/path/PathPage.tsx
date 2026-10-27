@@ -8,8 +8,15 @@ import { PathRail } from "./PathRail";
 import styles from "./Path.module.css";
 import { useOverview } from "./api";
 
-function SurfaceCard({ route, production }: { route: Route | undefined; production?: ModelSummary }) {
-  const surface = route?.surface ?? "search";
+function SurfaceCard({
+  surface,
+  route,
+  production,
+}: {
+  surface: string;
+  route: Route | undefined;
+  production?: ModelSummary;
+}) {
   const meta = SURFACE[surface] ?? { label: surface, model: "" };
   return (
     <Panel
@@ -103,8 +110,8 @@ function Body({ data }: { data: Overview }) {
   return (
     <div className={styles.layout}>
       <div className={styles.surfaces}>
-        <SurfaceCard route={routes["search"]} production={data.production.ranker} />
-        <SurfaceCard route={routes["home"]} production={data.production.tower} />
+        <SurfaceCard surface="search" route={routes["search"]} production={data.production.ranker} />
+        <SurfaceCard surface="home" route={routes["home"]} production={data.production.tower} />
       </div>
       <Panel
         title="Versions on the path"

@@ -84,6 +84,14 @@ describe("the path page", () => {
     expect(await screen.findByRole("heading", { name: "Search" })).toBeInTheDocument();
   });
 
+  it("names a surface no model serves yet", async () => {
+    const searchOnly = { ...overview, routing: overview.routing.filter((r) => r.surface === "search") };
+    renderAt("/", { ...F, overview: searchOnly });
+    expect(await screen.findByRole("heading", { name: "Homepage" })).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: "Search" })).toHaveLength(1);
+    expect(screen.getByText(/No model serves this surface yet/)).toBeInTheDocument();
+  });
+
   it("explains how to start when nothing has run", async () => {
     const empty = { ...overview, recent: [], runs: [], routing: [], production: {}, open_deployments: [] };
     renderAt("/", { ...F, overview: empty });

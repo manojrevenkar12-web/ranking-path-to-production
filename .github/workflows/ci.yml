@@ -186,8 +186,16 @@ jobs:
       - name: The relay in the cluster
         env: {PTP_RELAY_URL: "http://127.0.0.1:8090", PTP_STAND_IN_URL: "http://127.0.0.1:9999"}
         run: scripts/ci_run.sh pytest -q -m kind -s
-      - if: failure()
-        run: kubectl -n buyer-mlops logs deploy/relay --tail=60 | sed 's/^/::error ::/'; kubectl -n buyer-mlops get pods -o wide
+      - name: What the cluster says
+        if: failure()
+        run: |
+          {
+            kubectl -n buyer-mlops get pods -o wide
+            kubectl -n buyer-mlops describe pods -l app=relay | tail -n 45
+            kubectl -n buyer-mlops logs deploy/relay --tail=40
+            kubectl -n buyer-mlops logs deploy/relay --previous --tail=40
+          } > diag.txt 2>&1 || true
+          echo "::error title=relay in kind::$(sed -e 's/%/%25/g' diag.txt | awk 'BEGIN { ORS = "%0A" } { print }')"
 
   loop:
     # The deploy loop for real: a training run's event goes through Pub/Sub (emulated) to the relay, which sends

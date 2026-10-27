@@ -46,11 +46,58 @@ routing and serve the members.
 The simulator knows what each release would really do to purchases; only `src/ptp/evaluate.py` reads it, and a
 test checks that nothing that decides does.
 
-MEASURED_PLACEHOLDER
+### Measured
+
+Two dev seasons (`scenarios/dev/`, 24 simulated days each, a hand-deployed model adopted on day 7, continuous
+training from day 9, incidents and risky changes on the way). These seasons were used to find and fix problems,
+so they are not a fair test; the held-out set below is. Full results: `reports/dev/*/evaluation.json`.
+
+| | Season A | Season B |
+|---|---|---|
+| Releases (ranker and tower versions) | 15 | 14 |
+| Harmful or broken releases that reached production | 0 of 3 | 1 of 3 |
+| Better releases promoted | 4 of 6 | 6 of 6 |
+| Data blocks, all traced to a real incident | 2 | 4 |
+| Sessions served by a harmful release | 0% | 3.7% |
+| Candidate to production, median | 15 h | 18 h |
+| Pub/Sub deliveries / messages / dispatches | 31 / 18 / 9 | 23 / 19 / 12 |
+
+- The first retrained model (position-debiased, from the platform's own logs) sold 68% and 58% more than the
+  hand-deployed notebook model, by the simulator's truth.
+- Stopped before production: an export the serving runtime could not load (ONNX IR 11 on a runtime that loads 10),
+  a feature backfilled from a snapshot taken after the impression (provenance), PL prices arriving in cents (data
+  ranges, then serving skew on staging), a ranker without its price feature and a quick experiment config merged
+  by mistake (offline, overall and per market), and first homepage towers too close to random retrieval.
+- What got through: in season B, a routine daily refresh that was 1.2% worse by the truth passed offline (-0.2%,
+  interval -1.4% to +1.0%) and the canary (members preferred it in 54% of 253 decided sessions). The gates are
+  non-inferiority tests with a 2% margin, so a loss this small is inside what they tolerate; a tighter margin
+  blocks more good refreshes.
+- What was held back: in season A, a refresh 2.5% better by the truth failed the per-market offline check (FR
+  -2.3% on a noisy day), and a better one was stopped on staging because it was replayed against the days when PL
+  prices came in cents. The next day's run replaced both.
+- On real services in CI: Vespa accepted the generated package and returned the same scores as the model run
+  offline (largest difference 0.0 over the returned hits); Triton loaded two pinned versions of the user tower in
+  explicit mode. Real Vespa also found a bug the emulator had missed: its expression language has `fabs`, not
+  `abs`. The emulator now refuses `abs` too.
+
+HELDOUT_SECTION
+
+![The path](docs/screenshots/path.png)
+![A version stopped offline](docs/screenshots/model.png)
+
 
 ## Tests
 
-TESTS_PLACEHOLDER
+82 Python tests (`pytest -q`; 48 need no database): the offline metric and its bootstrap, interleaving, the
+Vespa package against the emulator, the relay's token check and exactly-once dispatch, the workflow files run by
+the GitHub emulator, data, model and export gates, deploys and canaries, the tower's two-phase rollout, the KFP
+pipelines on the local runner, Vertex submission against a stand-in, a tiny season through the whole loop, and
+three against real Vespa, Triton and Kubernetes (kind) in CI. The console has 14 unit tests (Vitest, against
+answers captured from a dev season) and 5 browser tests on desktop and phone (Playwright).
+
+CI (`.github/workflows/ci.yml`) runs eight jobs: python, kfp, console, e2e, vespa, triton, kind, and the loop,
+which sends a real `repository_dispatch` to this repository and watches `deploy-model.yml` deploy the candidate to
+two Vespa containers.
 
 ## Run it
 
